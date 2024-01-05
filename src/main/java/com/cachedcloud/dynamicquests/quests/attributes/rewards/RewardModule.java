@@ -1,4 +1,4 @@
-package com.cachedcloud.dynamicquests.rewards;
+package com.cachedcloud.dynamicquests.quests.attributes.rewards;
 
 import com.cachedcloud.dynamicquests.quests.Quest;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +59,7 @@ public class RewardModule implements TerminableModule {
         JSONObject attributes = new JSONObject(resultSet.getString("attributes"));
 
         // Build reward in the RewardFactory
-        rewards.add(this.rewardFactory.getReward(type, uuid, name, attributes));
+        rewards.add(this.rewardFactory.getAttribute(type, uuid, name, attributes));
       }
 
       return rewards;

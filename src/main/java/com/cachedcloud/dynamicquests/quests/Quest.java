@@ -1,6 +1,7 @@
 package com.cachedcloud.dynamicquests.quests;
 
-import com.cachedcloud.dynamicquests.rewards.Reward;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
+import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -17,8 +18,6 @@ public class Quest {
   private List<String> description;
 
   private final List<Reward> rewards = new ArrayList<>();
-
-  // the game design doc does not specify anything about objectives???
-  // I'll add that later anyway
+  private final List<Objective> objectives = new ArrayList<>();
 
 }

@@ -1,6 +1,6 @@
-package com.cachedcloud.dynamicquests.rewards.types;
+package com.cachedcloud.dynamicquests.quests.attributes.rewards.types;
 
-import com.cachedcloud.dynamicquests.rewards.Reward;
+import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.JSONObject;
@@ -12,7 +12,7 @@ public class ConsoleCommandReward extends Reward {
   private final String command;
 
   public ConsoleCommandReward(UUID uuid, String name, JSONObject json) {
-    super(uuid, name);
+    super(uuid, name, json);
     this.command = json.getString("command");
   }
 

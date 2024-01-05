@@ -2,8 +2,9 @@ package com.cachedcloud.dynamicquests.quests;
 
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveModule;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
-import com.cachedcloud.dynamicquests.rewards.RewardModule;
+import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
@@ -34,6 +35,7 @@ public class QuestModule implements TerminableModule {
   private final Sql sql;
   private final MessageModule messageModule;
   private final RewardModule rewardModule;
+  private final ObjectiveModule objectiveModule;
 
   // List of all quests
   private boolean initialized = false;
@@ -81,7 +83,7 @@ public class QuestModule implements TerminableModule {
 
       // Get rewards for all quests
       List<CompletableFuture<Void>> futures = quests.stream()
-          .map(quest -> CompletableFuture.runAsync(() -> rewardModule.loadRewards(quest)))
+          .map(quest -> CompletableFuture.runAsync(() -> rewardModule.loadRewards(quest)).thenRunAsync(() -> objectiveModule.loadAttribute(quest)))
           .toList();
 
       // Create a collection of all queued reward load operations

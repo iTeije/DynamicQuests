@@ -2,6 +2,7 @@ package com.cachedcloud.dynamicquests.quests.gui;
 
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
+import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Item;
 import me.lucko.helper.menu.paginated.PaginatedGui;
@@ -54,11 +55,19 @@ public class MainQuestGui extends PaginatedGui {
       return ItemStackBuilder.of(Material.PAPER)
           .name(quest.getName())
           .lore(quest.getDescription())
+          .apply(builder -> {
+            // Add rewards section
+            builder.lore("");
+            for (Reward reward : quest.getRewards()) {
+              builder.lore("&7- " + reward.getName());
+            }
+          })
           .transformMeta(meta -> {
             // enchant if quest is active todo
           })
           .build(() -> {
-            // todo start/cancel
+            // todo start/cancel menu
+            // todo add this menu as fallback
             Players.msg(player, "boop");
           });
     }).collect(Collectors.toList());
