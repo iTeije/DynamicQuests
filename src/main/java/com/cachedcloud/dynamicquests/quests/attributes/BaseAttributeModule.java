@@ -21,13 +21,13 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
   private final String updateAttributeStatement;
 
   private final String attributeName;
-  private final BaseAttributeFactory<T> baseAttributeFactory;
+  private final Factory<T> factory;
   private final Sql sql;
 
-  public BaseAttributeModule(Sql sql, String attributeName, BaseAttributeFactory<T> factory) {
+  public BaseAttributeModule(Sql sql, String attributeName, Factory<T> factory) {
     this.sql = sql;
     this.attributeName = attributeName;
-    this.baseAttributeFactory = factory;
+    this.factory = factory;
 
     createAttributeTableStatement = "CREATE TABLE IF NOT EXISTS " + attributeName + " (" +
         "`uuid` varchar(36) NOT NULL, " +
@@ -66,7 +66,7 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
         JSONObject json = new JSONObject(resultSet.getString("attributes"));
 
         // Build reward in the RewardFactory
-        attributes.add(this.baseAttributeFactory.getFactory().getAttribute(type, uuid, name, json));
+        attributes.add(this.factory.getAttribute(type, uuid, name, json));
       }
 
       return attributes;

@@ -1,7 +1,6 @@
 package com.cachedcloud.dynamicquests.quests.attributes.objectives;
 
 import com.cachedcloud.dynamicquests.quests.Quest;
-import com.cachedcloud.dynamicquests.quests.attributes.BaseAttributeFactory;
 import com.cachedcloud.dynamicquests.quests.attributes.BaseAttributeModule;
 import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
@@ -15,7 +14,7 @@ public class ObjectiveModule extends BaseAttributeModule<Objective> {
   private ObjectiveFactory objectiveFactory;
 
   public ObjectiveModule(Sql sql) {
-    super(sql, "objectives", new BaseAttributeFactory<>(ObjectiveFactory.class));
+    super(sql, "objectives", new ObjectiveFactory());
   }
 
   @Override
