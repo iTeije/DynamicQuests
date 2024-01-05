@@ -1,0 +1,27 @@
+package com.cachedcloud.dynamicquests.rewards.types;
+
+import com.cachedcloud.dynamicquests.rewards.Reward;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.json.JSONObject;
+
+import java.util.UUID;
+
+public class ConsoleCommandReward extends Reward {
+
+  private final String command;
+
+  public ConsoleCommandReward(UUID uuid, String name, JSONObject json) {
+    super(uuid, name);
+    this.command = json.getString("command");
+  }
+
+  @Override
+  public void giveReward(Player player) {
+    // Format command (1st arg = player name, 2nd arg = player uuid)
+    String formattedCommand = String.format(command, player.getName(), player.getUniqueId());
+
+    // Dispatch the command as console
+    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formattedCommand);
+  }
+}
