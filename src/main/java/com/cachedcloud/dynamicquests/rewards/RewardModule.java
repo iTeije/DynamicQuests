@@ -2,7 +2,6 @@ package com.cachedcloud.dynamicquests.rewards;
 
 import com.cachedcloud.dynamicquests.quests.Quest;
 import lombok.RequiredArgsConstructor;
-import me.lucko.helper.promise.Promise;
 import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
@@ -11,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -40,14 +40,13 @@ public class RewardModule implements TerminableModule {
   }
 
   /**
-   * Get the rewards that correspond to the uuid of the quest
+   * Get and apply the rewards that correspond to this quest
    *
-   * @param quest the quest to look up
-   * @return the list of {@link Reward} objects that correspond to the quest uuid
+   * @param quest the quest to load the rewards for
    */
-  public Promise<List<Reward>> getRewards(Quest quest) {
-    // Query the database asynchronously
-    return sql.queryAsync(GET_REWARDS, preparedStatement -> {
+  public void loadRewards(Quest quest) {
+    // Query the database - ONLY CALL THIS METHOD ASYNC
+    Optional<List<Reward>> rewardOptional = sql.query(GET_REWARDS, preparedStatement -> {
       // Insert quest uuid
       preparedStatement.setString(1, quest.getUuid().toString());
     }, resultSet -> {
@@ -64,6 +63,9 @@ public class RewardModule implements TerminableModule {
       }
 
       return rewards;
-    }).thenApplyAsync(optional -> optional.orElseGet(ArrayList::new));
+    });
+
+    // Apply rewards
+    quest.getRewards().addAll(rewardOptional.orElse(new ArrayList<>()));
   }
 }

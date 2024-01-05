@@ -20,6 +20,6 @@ public final class DynamicQuests extends ExtendedJavaPlugin {
         MessageModule messageModule = bindModule(new MessageModule(config));
 
         RewardModule rewardModule = bindModule(new RewardModule(sql));
-        QuestModule questModule = bindModule(new QuestModule(sql, messageModule));
+        QuestModule questModule = bindModule(new QuestModule(sql, messageModule, rewardModule));
     }
 }

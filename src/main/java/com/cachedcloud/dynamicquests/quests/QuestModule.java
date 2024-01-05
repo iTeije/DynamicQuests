@@ -3,17 +3,20 @@ package com.cachedcloud.dynamicquests.quests;
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
+import com.cachedcloud.dynamicquests.rewards.RewardModule;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 public class QuestModule implements TerminableModule {
@@ -30,6 +33,7 @@ public class QuestModule implements TerminableModule {
   // Constructor params
   private final Sql sql;
   private final MessageModule messageModule;
+  private final RewardModule rewardModule;
 
   // List of all quests
   private boolean initialized = false;
@@ -39,9 +43,6 @@ public class QuestModule implements TerminableModule {
   public void setup(@NotNull TerminableConsumer consumer) {
     // Create table and then query all quests (why? because concurrency will destroy
     sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
-
-    // Query all quests from database
-    this.initializeQuests();
 
     // Create main quests command
     Commands.create()
@@ -76,9 +77,24 @@ public class QuestModule implements TerminableModule {
       }
       return quests;
     }).thenAcceptSync(optionalList -> {
-      // Cache all quests
-      this.quests.addAll(optionalList.orElse(new ArrayList<>()));
-      initialized = true;
+      List<Quest> quests = optionalList.orElse(new ArrayList<>());
+
+      // Get rewards for all quests
+      List<CompletableFuture<Void>> futures = quests.stream()
+          .map(quest -> CompletableFuture.runAsync(() -> rewardModule.loadRewards(quest)))
+          .toList();
+
+      // Create a collection of all queued reward load operations
+      CompletableFuture<Void> allQueued = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+      allQueued.thenRun(() -> {
+        // Cache all quests
+        this.quests.addAll(optionalList.orElse(new ArrayList<>()));
+        initialized = true;
+
+        // Log
+        Bukkit.getLogger().info("Quests and rewards are fully initialized.");
+      });
     });
   }
 }
