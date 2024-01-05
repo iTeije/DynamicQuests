@@ -8,10 +8,13 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @Getter
-public abstract class Quest {
+public class Quest {
 
   private final UUID uuid;
   private String name;
   private List<String> description;
+
+  // the game design doc does not specify anything about objectives???
+  // I'll add that later anyway
 
 }

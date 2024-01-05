@@ -1,14 +1,21 @@
 package com.cachedcloud.dynamicquests.quests;
 
+import com.cachedcloud.dynamicquests.messaging.MessageModule;
+import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
+import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
+import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+@RequiredArgsConstructor
 public class QuestModule implements TerminableModule {
 
   // SQL statements
@@ -20,24 +27,58 @@ public class QuestModule implements TerminableModule {
   private static final String CREATE_QUEST = "INSERT INTO `quests` (`uuid`, `name`, `description`) VALUES (?, ?, ?)";
   private static final String UPDATE_QUEST = "UPDATE `quests` SET `name` = ?, `description` = ? WHERE `uuid` = ?";
 
+  // Constructor params
+  private final Sql sql;
+  private final MessageModule messageModule;
+
   // List of all quests
+  private boolean initialized = false;
   private final List<Quest> quests = new ArrayList<>();
 
   @Override
   public void setup(@NotNull TerminableConsumer consumer) {
+    // Create table and then query all quests (why? because concurrency will destroy
+    sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
+
     // Query all quests from database
-    // todo
+    this.initializeQuests();
 
     // Create main quests command
     Commands.create()
         .assertPlayer()
         .handler(cmd -> {
-          // Open quest GUI
-          new MainQuestGui(cmd.sender(), this).open();
+          // Check if plugin has been initialized
+          if (initialized) {
+            // Open quest GUI
+            new MainQuestGui(cmd.sender(), this).open();
+          } else {
+            // Send error message
+            cmd.reply(messageModule.getAndFormat(StorageKey.PENDING_LOAD_ERROR));
+          }
         }).registerAndBind(consumer, "quest", "quests");
   }
 
   public List<Quest> getQuests() {
     return this.quests;
+  }
+
+  private void initializeQuests() {
+    // Fetch all quests from the database
+    sql.queryAsync(GET_QUESTS, preparedStatement -> {}, resultSet -> {
+      // Parse all rows
+      List<Quest> quests = new ArrayList<>();
+      while (resultSet.next()) {
+        UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+        String name = resultSet.getString("name");
+        String description = resultSet.getString("description");
+        // Create quest instance and add it to the temporary list
+        quests.add(new Quest(uuid, name, Arrays.asList(description.split("\n"))));
+      }
+      return quests;
+    }).thenAcceptSync(optionalList -> {
+      // Cache all quests
+      this.quests.addAll(optionalList.orElse(new ArrayList<>()));
+      initialized = true;
+    });
   }
 }

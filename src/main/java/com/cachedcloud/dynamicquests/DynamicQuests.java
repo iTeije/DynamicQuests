@@ -1,5 +1,6 @@
 package com.cachedcloud.dynamicquests;
 
+import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
 import com.cachedcloud.dynamicquests.rewards.RewardModule;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
@@ -16,7 +17,9 @@ public final class DynamicQuests extends ExtendedJavaPlugin {
         FileConfiguration config = loadConfig("config.yml");
         Sql sql = getService(Sql.class);
 
+        MessageModule messageModule = bindModule(new MessageModule(config));
+
         RewardModule rewardModule = bindModule(new RewardModule(sql));
-        QuestModule questModule = bindModule(new QuestModule());
+        QuestModule questModule = bindModule(new QuestModule(sql, messageModule));
     }
 }
