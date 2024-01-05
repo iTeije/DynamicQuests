@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
-public class RewardFactory implements Factory {
+public class RewardFactory implements Factory<Reward> {
 
   public Reward getAttribute(String type, UUID uuid, String name, JSONObject attributes) {
     if (type.equalsIgnoreCase("consolecommand")) {

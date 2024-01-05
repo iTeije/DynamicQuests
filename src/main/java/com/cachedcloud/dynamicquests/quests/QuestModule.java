@@ -67,7 +67,8 @@ public class QuestModule implements TerminableModule {
 
   private void initializeQuests() {
     // Fetch all quests from the database
-    sql.queryAsync(GET_QUESTS, preparedStatement -> {}, resultSet -> {
+    sql.queryAsync(GET_QUESTS, preparedStatement -> {
+    }, resultSet -> {
       // Parse all rows
       List<Quest> quests = new ArrayList<>();
       while (resultSet.next()) {
@@ -83,7 +84,9 @@ public class QuestModule implements TerminableModule {
 
       // Get rewards for all quests
       List<CompletableFuture<Void>> futures = quests.stream()
-          .map(quest -> CompletableFuture.runAsync(() -> rewardModule.loadRewards(quest)).thenRunAsync(() -> objectiveModule.loadAttribute(quest)))
+          .map(quest -> CompletableFuture.runAsync(() -> rewardModule.loadAttribute(quest))
+              .thenRunAsync(() -> objectiveModule.loadAttribute(quest))
+          )
           .toList();
 
       // Create a collection of all queued reward load operations

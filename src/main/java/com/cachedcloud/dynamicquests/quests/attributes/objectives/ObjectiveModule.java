@@ -10,9 +10,6 @@ import java.util.List;
 
 public class ObjectiveModule extends BaseAttributeModule<Objective> {
 
-  // Factories
-  private ObjectiveFactory objectiveFactory;
-
   public ObjectiveModule(Sql sql) {
     super(sql, "objectives", new ObjectiveFactory());
   }
@@ -20,6 +17,7 @@ public class ObjectiveModule extends BaseAttributeModule<Objective> {
   @Override
   public void setup(@NotNull TerminableConsumer consumer) {
     super.setup(consumer);
+    // todo add support for starting and tracking objectives and progress
   }
 
   @Override
