@@ -173,4 +173,15 @@ public class ProgressModule implements TerminableModule {
     // Save current quest progress
     this.updateQuestProgress(playerUuid);
   }
+
+  public Quest getCurrentQuest(UUID playerUuid) {
+    // Check if player has an ongoing quest at all
+    if (!(this.progressMap.containsKey(playerUuid))) return null;
+
+    // Get quest progress for player
+    QuestProgress progress = this.progressMap.get(playerUuid);
+
+    // Return quest
+    return progress.getQuest();
+  }
 }

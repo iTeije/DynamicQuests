@@ -25,4 +25,18 @@ public class Quest {
     return objectives.stream().filter(o -> o.getUuid() == objectiveUuid).findFirst();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Quest quest = (Quest) o;
+
+    return uuid.equals(quest.uuid);
+  }
+
+  @Override
+  public int hashCode() {
+    return uuid.hashCode();
+  }
 }

@@ -7,3 +7,4 @@ messages:
   join-quest-expired: "&7Welcome back, %2$s. The time to complete the %1$s &7Quest has &cexpired&7. Use &e/quests &7to try again."
   join-quest-available: "&7Welcome, %1$s. There are new quests available! Use &e/quests &7to open the quests menu."
   objective-complete: "&e&lOBJECTIVE COMPLETE! &7Congratulations, you have completed a quest objective. Check &e/quests &7to track your progress."
+  main-menu-click-failed: "&cYou have previously accepted a different quest. Please complete or cancel that one first."

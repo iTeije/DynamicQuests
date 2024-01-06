@@ -7,6 +7,7 @@ import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.QuestAdminGui;
 import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
@@ -37,6 +38,7 @@ public class QuestModule implements TerminableModule {
 
   // Constructor params
   private final Sql sql;
+  @Getter
   private final MessageModule messageModule;
   private final RewardModule rewardModule;
   private final ObjectiveModule objectiveModule;
@@ -67,7 +69,7 @@ public class QuestModule implements TerminableModule {
           // Check if plugin has been initialized
           if (initialized) {
             // Open quest GUI
-            new MainQuestGui(cmd.sender(), this).open();
+            new MainQuestGui(cmd.sender(), progressModule, this).open();
           } else {
             // Send error message
             cmd.reply(messageModule.getAndFormat(StorageKey.PENDING_LOAD_ERROR));
@@ -88,14 +90,6 @@ public class QuestModule implements TerminableModule {
             cmd.reply(messageModule.getAndFormat(StorageKey.PENDING_LOAD_ERROR));
           }
         }).registerAndBind(consumer, "questadmin", "questsadmin");
-  }
-
-  public Collection<Quest> getQuests() {
-    return this.quests.values();
-  }
-
-  public Quest getQuest(UUID questUuid) {
-    return this.quests.get(questUuid);
   }
 
   private void initializeQuests() {
@@ -134,5 +128,13 @@ public class QuestModule implements TerminableModule {
         Bukkit.getLogger().info("Quests and its attributes are fully initialized.");
       });
     });
+  }
+
+  public Collection<Quest> getQuests() {
+    return this.quests.values();
+  }
+
+  public Quest getQuest(UUID questUuid) {
+    return this.quests.get(questUuid);
   }
 }

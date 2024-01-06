@@ -11,7 +11,8 @@ public enum StorageKey {
   JOIN_QUEST_PROGRESS("join-quest-progress"),
   JOIN_QUEST_EXPIRED("join-quest-expired"),
   JOIN_QUEST_AVAILABLE("join-quest-available"),
-  OBJECTIVE_COMPLETE("objective-complete");
+  OBJECTIVE_COMPLETE("objective-complete"),
+  MAIN_MENU_CLICK_FAILED("main-menu-click-failed");
 
   private final String path;
 }

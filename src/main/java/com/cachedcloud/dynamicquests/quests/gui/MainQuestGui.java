@@ -1,16 +1,21 @@
 package com.cachedcloud.dynamicquests.quests.gui;
 
+import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
+import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
 import me.lucko.helper.item.ItemStackBuilder;
+import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Item;
 import me.lucko.helper.menu.paginated.PaginatedGui;
 import me.lucko.helper.menu.paginated.PaginatedGuiBuilder;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import me.lucko.helper.utils.Players;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,9 +27,9 @@ public class MainQuestGui extends PaginatedGui {
   private static final MenuScheme SCHEME = new MenuScheme()
       .maskEmpty(5);
 
-  public MainQuestGui(Player player, QuestModule questModule) {
+  public MainQuestGui(Player player, ProgressModule progressModule, QuestModule questModule) {
     super(
-        paginatedGui -> buildQuestItems(paginatedGui, player, questModule.getQuests()),
+        paginatedGui -> buildQuestItems(paginatedGui, player, progressModule, questModule),
         player,
         PaginatedGuiBuilder.create()
             .title("&8&lQuests")
@@ -51,7 +56,13 @@ public class MainQuestGui extends PaginatedGui {
     super.redraw();
   }
 
-  private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, Player player, final Collection<Quest> quests) {
+  private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, Player player, final ProgressModule progressModule, final QuestModule questModule) {
+    // Create a collection of quests
+    Collection<Quest> quests = questModule.getQuests();
+
+    // Get active Quest
+    Quest activeQuest = progressModule.getCurrentQuest(player.getUniqueId());
+
     // Create a menu item for all quests
     return quests.stream().map(quest -> {
       return ItemStackBuilder.of(Material.PAPER)
@@ -63,14 +74,26 @@ public class MainQuestGui extends PaginatedGui {
             for (Reward reward : quest.getRewards()) {
               builder.lore("&7- " + reward.getName());
             }
-          })
-          .transformMeta(meta -> {
-            // enchant if quest is active todo
+
+            // Enchant if this quest is active
+            if (quest.equals(activeQuest)) {
+              builder.enchant(Enchantment.ARROW_FIRE, 1);
+              builder.flag(ItemFlag.HIDE_ENCHANTS);
+            }
           })
           .build(() -> {
-            // todo start/cancel menu
-            // todo add this menu as fallback
-            Players.msg(player, "boop");
+            // If the player does not have an active quest, OR this quest is the active quest,
+            // allow the player to open the quest action GUI
+            if (activeQuest == null || quest.equals(activeQuest)) {
+              Gui actionGui = new QuestActionGui(player, quest, !quest.equals(activeQuest));
+              actionGui.setFallbackGui(p -> paginatedGui);
+              paginatedGui.close();
+              actionGui.open();
+
+            } else {
+              // Send message indicating that the player is already doing a quest
+              Players.msg(player, questModule.getMessageModule().getAndFormat(StorageKey.MAIN_MENU_CLICK_FAILED));
+            }
           });
     }).collect(Collectors.toList());
   }
