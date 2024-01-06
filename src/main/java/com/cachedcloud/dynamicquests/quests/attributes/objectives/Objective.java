@@ -1,7 +1,7 @@
 package com.cachedcloud.dynamicquests.quests.attributes.objectives;
 
 import com.cachedcloud.dynamicquests.quests.attributes.BaseAttribute;
-import com.cachedcloud.dynamicquests.tracking.QuestProgress;
+import com.cachedcloud.dynamicquests.quests.tracking.QuestProgress;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.lucko.helper.terminable.TerminableConsumer;

@@ -6,6 +6,7 @@ import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveModul
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.QuestAdminGui;
+import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
@@ -44,8 +45,14 @@ public class QuestModule implements TerminableModule {
   private boolean initialized = false;
   private final Map<UUID, Quest> quests = new HashMap<>();
 
+  // Progress module (initialized here)
+  private ProgressModule progressModule;
+
   @Override
   public void setup(@NotNull TerminableConsumer consumer) {
+    // Initialize ProgressModule
+    progressModule = consumer.bindModule(new ProgressModule(sql, this, messageModule));
+
     // Create table and then query all quests (why? because concurrency will destroy
     sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
 

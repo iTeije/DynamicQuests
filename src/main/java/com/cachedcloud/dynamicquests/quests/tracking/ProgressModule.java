@@ -1,4 +1,4 @@
-package com.cachedcloud.dynamicquests.tracking;
+package com.cachedcloud.dynamicquests.quests.tracking;
 
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
