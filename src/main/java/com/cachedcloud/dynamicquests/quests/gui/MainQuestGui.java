@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,7 @@ public class MainQuestGui extends PaginatedGui {
     super.redraw();
   }
 
-  private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, Player player, final List<Quest> quests) {
+  private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, Player player, final Collection<Quest> quests) {
     // Create a menu item for all quests
     return quests.stream().map(quest -> {
       return ItemStackBuilder.of(Material.PAPER)

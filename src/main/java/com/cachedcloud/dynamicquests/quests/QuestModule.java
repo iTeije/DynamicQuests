@@ -3,8 +3,8 @@ package com.cachedcloud.dynamicquests.quests;
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveModule;
-import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
+import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.QuestAdminGui;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
@@ -14,10 +14,7 @@ import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
@@ -40,7 +37,7 @@ public class QuestModule implements TerminableModule {
 
   // List of all quests
   private boolean initialized = false;
-  private final List<Quest> quests = new ArrayList<>();
+  private final Map<UUID, Quest> quests = new HashMap<>();
 
   @Override
   public void setup(@NotNull TerminableConsumer consumer) {
@@ -48,7 +45,8 @@ public class QuestModule implements TerminableModule {
     sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
 
     // Debug
-    this.quests.add(new Quest(UUID.randomUUID(), "&eTest Quest", Arrays.asList("&7This is a quest that", "&7is used for testing only.")));
+    UUID randomUuid = UUID.randomUUID();
+    this.quests.put(randomUuid, new Quest(randomUuid, "&eTest Quest", Arrays.asList("&7This is a quest that", "&7is used for testing only.")));
 
     // Create main quests command
     Commands.create()
@@ -80,8 +78,12 @@ public class QuestModule implements TerminableModule {
         }).registerAndBind(consumer, "questadmin", "questsadmin");
   }
 
-  public List<Quest> getQuests() {
-    return this.quests;
+  public Collection<Quest> getQuests() {
+    return this.quests.values();
+  }
+
+  public Quest getQuest(UUID questUuid) {
+    return this.quests.get(questUuid);
   }
 
   private void initializeQuests() {
@@ -89,20 +91,20 @@ public class QuestModule implements TerminableModule {
     sql.queryAsync(GET_QUESTS, preparedStatement -> {
     }, resultSet -> {
       // Parse all rows
-      List<Quest> quests = new ArrayList<>();
+      Map<UUID, Quest> quests = new HashMap<>();
       while (resultSet.next()) {
         UUID uuid = UUID.fromString(resultSet.getString("uuid"));
         String name = resultSet.getString("name");
         String description = resultSet.getString("description");
         // Create quest instance and add it to the temporary list
-        quests.add(new Quest(uuid, name, Arrays.asList(description.split("\n"))));
+        quests.put(uuid, new Quest(uuid, name, Arrays.asList(description.split("\n"))));
       }
       return quests;
     }).thenAcceptSync(optionalList -> {
-      List<Quest> quests = optionalList.orElse(new ArrayList<>());
+      Map<UUID, Quest> quests = optionalList.orElse(new HashMap<>());
 
       // Get rewards for all quests
-      List<CompletableFuture<Void>> futures = quests.stream()
+      List<CompletableFuture<Void>> futures = quests.values().stream()
           .map(quest -> CompletableFuture.runAsync(() -> rewardModule.loadAttribute(quest))
               .thenRunAsync(() -> objectiveModule.loadAttribute(quest))
           )
@@ -113,7 +115,7 @@ public class QuestModule implements TerminableModule {
 
       allQueued.thenRun(() -> {
         // Cache all quests
-        this.quests.addAll(optionalList.orElse(new ArrayList<>()));
+        this.quests.putAll(quests);
         initialized = true;
 
         // Log

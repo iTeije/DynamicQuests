@@ -17,7 +17,6 @@ public class ObjectiveModule extends BaseAttributeModule<Objective> {
   @Override
   public void setup(@NotNull TerminableConsumer consumer) {
     super.setup(consumer);
-    // todo add support for starting and tracking objectives and progress
   }
 
   @Override

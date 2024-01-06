@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class QuestAdminGui extends PaginatedGui {
     );
   }
 
-  private static List<Item> buildQuestItems(Player player, final List<Quest> quests) {
+  private static List<Item> buildQuestItems(Player player, final Collection<Quest> quests) {
     // Create the admin version of the quest menu items
     return quests.stream().map(quest -> {
       return ItemStackBuilder.of(Material.PAPER)
