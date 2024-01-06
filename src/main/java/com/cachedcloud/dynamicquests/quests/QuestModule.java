@@ -5,6 +5,7 @@ import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveModule;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
+import com.cachedcloud.dynamicquests.quests.gui.admin.QuestAdminGui;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
@@ -46,6 +47,9 @@ public class QuestModule implements TerminableModule {
     // Create table and then query all quests (why? because concurrency will destroy
     sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
 
+    // Debug
+    this.quests.add(new Quest(UUID.randomUUID(), "&eTest Quest", Arrays.asList("&7This is a quest that", "&7is used for testing only.")));
+
     // Create main quests command
     Commands.create()
         .assertPlayer()
@@ -59,6 +63,21 @@ public class QuestModule implements TerminableModule {
             cmd.reply(messageModule.getAndFormat(StorageKey.PENDING_LOAD_ERROR));
           }
         }).registerAndBind(consumer, "quest", "quests");
+
+    // Create admin command
+    Commands.create()
+        .assertPlayer()
+        .assertPermission("quests.admin")
+        .handler(cmd -> {
+          // Check if plugin has been initialized
+          if (initialized) {
+            // Open admin GUI
+            new QuestAdminGui(cmd.sender(), this).open();
+          } else {
+            // Send error message
+            cmd.reply(messageModule.getAndFormat(StorageKey.PENDING_LOAD_ERROR));
+          }
+        }).registerAndBind(consumer, "questadmin", "questsadmin");
   }
 
   public List<Quest> getQuests() {
@@ -98,7 +117,7 @@ public class QuestModule implements TerminableModule {
         initialized = true;
 
         // Log
-        Bukkit.getLogger().info("Quests and rewards are fully initialized.");
+        Bukkit.getLogger().info("Quests and its attributes are fully initialized.");
       });
     });
   }
