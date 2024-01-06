@@ -20,13 +20,11 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
   private final String createAttributeStatement;
   private final String updateAttributeStatement;
 
-  private final String attributeName;
   private final Factory<T> factory;
   private final Sql sql;
 
   public BaseAttributeModule(Sql sql, String attributeName, Factory<T> factory) {
     this.sql = sql;
-    this.attributeName = attributeName;
     this.factory = factory;
 
     createAttributeTableStatement = "CREATE TABLE IF NOT EXISTS " + attributeName + " (" +
