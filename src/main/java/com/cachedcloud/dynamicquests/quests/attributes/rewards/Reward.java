@@ -23,7 +23,7 @@ public abstract class Reward implements BaseAttribute {
 
   public void sendRewardMessage(Player player) {
     // Send message to player in case there is one
-    String msg = json.getString("message");
+    String msg = json.getString("completion_message");
 
     if (msg != null) Players.msg(player, msg);
   }

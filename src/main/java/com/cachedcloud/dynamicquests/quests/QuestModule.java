@@ -71,7 +71,7 @@ public class QuestModule implements TerminableModule {
     // Create demo reward
     JSONObject object = new JSONObject();
     object.put("command", "give %1$s dirt 32");
-    object.put("message", "&aYou won 32x Dirt!");
+    object.put("completion_message", "&aYou won 32x Dirt!");
     newQuest.getRewards().add(new ConsoleCommandReward(UUID.randomUUID(), "&732x Dirt", object));
 
     // Create demo objective
