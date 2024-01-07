@@ -18,6 +18,9 @@ public class ConsoleCommandReward extends Reward {
 
   @Override
   public void giveReward(Player player) {
+    // Send reward message
+    super.sendRewardMessage(player);
+
     // Format command (1st arg = player name, 2nd arg = player uuid)
     String formattedCommand = String.format(command, player.getName(), player.getUniqueId());
 

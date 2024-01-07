@@ -4,6 +4,7 @@ import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,10 @@ public class Quest {
 
   public Optional<Objective> getObjective(UUID objectiveUuid) {
     return objectives.stream().filter(o -> o.getUuid().equals(objectiveUuid)).findFirst();
+  }
+
+  public void issueRewards(Player player) {
+    this.rewards.forEach(reward -> reward.giveReward(player));
   }
 
   @Override

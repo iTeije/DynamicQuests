@@ -72,7 +72,7 @@ public class QuestProgress {
     // Check if any objectives remain
     if (this.progress.size() == 0) {
       // Quest complete
-      // todo
+      progressModule.handleQuestComplete(this.playerUuid, this);
     } else {
       // Send confirmation message to the player saying that they completed an objective
       progressModule.handleObjectiveComplete(this.playerUuid);

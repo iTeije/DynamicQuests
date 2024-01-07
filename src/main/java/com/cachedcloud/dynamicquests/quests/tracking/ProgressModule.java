@@ -14,6 +14,7 @@ import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
 import me.lucko.helper.utils.Players;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -89,7 +90,6 @@ public class ProgressModule implements TerminableModule {
 
             // Calculate percentage
             int percentageComplete = (int) (((double) totalComplete / totalRequired) * 100);
-            System.out.println(percentageComplete);
 
             // Send message
             Players.msg(
@@ -235,6 +235,17 @@ public class ProgressModule implements TerminableModule {
     });
   }
 
+  public Quest getCurrentQuest(UUID playerUuid) {
+    // Check if player has an ongoing quest at all
+    if (!(this.progressMap.containsKey(playerUuid))) return null;
+
+    // Get quest progress for player
+    QuestProgress progress = this.progressMap.get(playerUuid);
+
+    // Return quest
+    return progress.getQuest();
+  }
+
   /**
    * Handle the completion of an objective, which is triggered from the QuestProgress object
    *
@@ -250,14 +261,23 @@ public class ProgressModule implements TerminableModule {
     this.updateQuestProgress(playerUuid);
   }
 
-  public Quest getCurrentQuest(UUID playerUuid) {
-    // Check if player has an ongoing quest at all
-    if (!(this.progressMap.containsKey(playerUuid))) return null;
+  public void handleQuestComplete(UUID playerUuid, QuestProgress progress) {
+    // Get quest from QuestProgress object
+    Quest quest = progress.getQuest();
 
-    // Get quest progress for player
-    QuestProgress progress = this.progressMap.get(playerUuid);
+    // Log
+    Bukkit.getLogger().info(playerUuid.toString() + " completed quest " + quest.getName());
 
-    // Return quest
-    return progress.getQuest();
+    // Delete progress
+    this.deleteProgress(playerUuid, quest);
+
+    // Get player (which cannot be null)
+    Player player = Players.getNullable(playerUuid);
+
+    // Handle rewards
+    quest.issueRewards(player);
+
+    // Send confirmation message
+    Players.msg(player, messageModule.getAndFormat(StorageKey.QUEST_COMPLETE, quest.getName()));
   }
 }
