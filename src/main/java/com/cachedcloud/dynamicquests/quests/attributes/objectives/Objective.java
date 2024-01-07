@@ -2,16 +2,15 @@ package com.cachedcloud.dynamicquests.quests.attributes.objectives;
 
 import com.cachedcloud.dynamicquests.quests.attributes.BaseAttribute;
 import com.cachedcloud.dynamicquests.quests.tracking.QuestProgress;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.lucko.helper.terminable.TerminableConsumer;
+import org.bukkit.entity.Player;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@AllArgsConstructor
 @Getter
 public abstract class Objective implements BaseAttribute {
 
@@ -43,6 +42,14 @@ public abstract class Objective implements BaseAttribute {
 
   public void unTrackPlayer(UUID player) {
     this.trackedPlayers.remove(player);
+  }
+
+  public boolean isTracking(Player player) {
+    return isTracking(player.getUniqueId());
+  }
+
+  public boolean isTracking(UUID playerUuid) {
+    return this.trackedPlayers.containsKey(playerUuid);
   }
 
   public abstract void registerListeners(TerminableConsumer consumer);
