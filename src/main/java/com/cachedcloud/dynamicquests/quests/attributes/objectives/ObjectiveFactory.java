@@ -1,22 +1,29 @@
 package com.cachedcloud.dynamicquests.quests.attributes.objectives;
 
 import com.cachedcloud.dynamicquests.quests.attributes.Factory;
-import com.cachedcloud.dynamicquests.quests.attributes.objectives.types.BreakBlockObjective;
-import com.cachedcloud.dynamicquests.quests.attributes.objectives.types.KillEntityObjective;
-import com.cachedcloud.dynamicquests.quests.attributes.objectives.types.PlaceBlockObjective;
+import org.bukkit.Bukkit;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class ObjectiveFactory implements Factory<Objective> {
 
   public Objective getAttribute(String type, UUID uuid, String name, JSONObject json) {
-    if (type.equalsIgnoreCase("killentity")) {
-      return new KillEntityObjective(uuid, name, json);
-    } else if (type.equalsIgnoreCase("breakblock")) {
-      return new BreakBlockObjective(uuid, name, json);
-    } else if (type.equalsIgnoreCase("placeblock")) {
-      return new PlaceBlockObjective(uuid, name, json);
+    try {
+      // Get ObjectiveType from string
+      ObjectiveType objectiveType = ObjectiveType.valueOf(type.toUpperCase());
+
+      if (!objectiveType.hasRequiredArgs(json)) {
+        // Log that the objective is invalid
+        Bukkit.getLogger().warning("Objective with type '" + objectiveType.name() + "' has improper attributes: " + json);
+        return null;
+      }
+
+      // Create an instance of the corresponding Objective
+      return objectiveType.createInstance(uuid, name, json);
+    } catch (NoSuchElementException exception) {
+      Bukkit.getLogger().warning("ObjectiveType '" + type.toUpperCase() + "' does not exist.");
     }
 
     return null;

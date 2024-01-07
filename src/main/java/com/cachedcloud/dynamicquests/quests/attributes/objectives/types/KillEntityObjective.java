@@ -17,7 +17,7 @@ public class KillEntityObjective extends Objective {
 
   public KillEntityObjective(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    this.type = EntityType.valueOf(json.getString("type").toUpperCase());
+    this.type = EntityType.valueOf(json.getString("entityType").toUpperCase());
   }
 
   @Override

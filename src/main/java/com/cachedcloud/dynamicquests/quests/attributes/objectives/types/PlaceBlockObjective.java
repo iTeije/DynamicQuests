@@ -13,18 +13,10 @@ import java.util.UUID;
 public class PlaceBlockObjective extends Objective {
 
   private final Material blockType;
-  private final boolean allBlocks;
 
   public PlaceBlockObjective(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    if (!json.has("material")) {
-      this.allBlocks = true;
-      this.blockType = null;
-      return;
-    }
-
     this.blockType = Material.valueOf(json.getString("material").toUpperCase());
-    this.allBlocks = false;
   }
 
   @Override
@@ -32,7 +24,7 @@ public class PlaceBlockObjective extends Objective {
     // Track block placement
     Events.subscribe(BlockPlaceEvent.class)
         .filter(EventFilters.ignoreCancelled())
-        .filter(event -> this.allBlocks || event.getBlockPlaced().getType() == blockType)
+        .filter(event -> event.getBlockPlaced().getType() == blockType)
         .filter(event -> isTracking(event.getPlayer()))
         .handler(event -> {
           // Increment progress

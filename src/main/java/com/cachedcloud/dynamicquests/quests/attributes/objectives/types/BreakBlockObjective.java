@@ -13,18 +13,10 @@ import java.util.UUID;
 public class BreakBlockObjective extends Objective {
 
   private final Material blockType;
-  private final boolean allBlocks;
 
   public BreakBlockObjective(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    if (!json.has("material")) {
-      this.allBlocks = true;
-      this.blockType = null;
-      return;
-    }
-
     this.blockType = Material.valueOf(json.getString("material").toUpperCase());
-    this.allBlocks = false;
   }
 
   @Override
@@ -32,7 +24,7 @@ public class BreakBlockObjective extends Objective {
     // Track block break
     Events.subscribe(BlockBreakEvent.class)
         .filter(EventFilters.ignoreCancelled())
-        .filter(event -> this.allBlocks || event.getBlock().getType() == blockType)
+        .filter(event -> event.getBlock().getType() == blockType)
         .filter(event -> isTracking(event.getPlayer()))
         .handler(event -> {
           // Increment progress
