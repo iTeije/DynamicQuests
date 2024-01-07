@@ -31,6 +31,7 @@ public class QuestProgress {
     this.progress = new HashMap<>();
     for (Objective objective : quest.getObjectives()) {
       this.progress.put(objective.getUuid(), new ProgressEntry(objective.getRequirement()));
+      objective.trackPlayer(playerUuid, this);
     }
   }
 
@@ -42,14 +43,16 @@ public class QuestProgress {
     for (String key : data.keySet()) {
       UUID objectiveUuid = UUID.fromString(key);
       int progress = data.getInt(key);
+
       Optional<Objective> objectiveOpt = quest.getObjective(objectiveUuid);
 
-      // Check if objective exists (it would be weird if it wasn't but it could definitely happen)
+      // Check if objective actually exists (it would be weird if it wasn't but it could definitely happen)
       if (objectiveOpt.isEmpty()) continue;
 
       // Save progress
       Objective objective = objectiveOpt.get();
       this.progress.put(objectiveUuid, new ProgressEntry(progress, objective.getRequirement()));
+      objective.trackPlayer(playerUuid, this);
 
       // Increment progress by 0 to trigger completion checks (in case the requirement was updated)
       this.incrementProgress(objective, 0);
@@ -92,7 +95,8 @@ public class QuestProgress {
   }
 
   @RequiredArgsConstructor
-  private static class ProgressEntry {
+  @Getter
+  public static class ProgressEntry {
     private final MutableInt progress = new MutableInt(0);
     private final int requirement;
 

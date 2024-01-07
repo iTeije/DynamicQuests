@@ -2,6 +2,7 @@ package com.cachedcloud.dynamicquests.quests.gui.admin;
 
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
+import com.cachedcloud.dynamicquests.utils.GuiUtil;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Item;
 import me.lucko.helper.menu.paginated.PaginatedGui;
@@ -47,6 +48,10 @@ public class QuestAdminGui extends PaginatedGui {
 
   @Override
   public void redraw() {
+    // Fill gui with filler items
+    GuiUtil.fill(this);
+
+    // Handle pagination
     super.redraw();
 
     // Add button to create new quest

@@ -2,8 +2,11 @@ package com.cachedcloud.dynamicquests.quests;
 
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveModule;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.types.KillEntityObjective;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
+import com.cachedcloud.dynamicquests.quests.attributes.rewards.types.ConsoleCommandReward;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.QuestAdminGui;
 import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
@@ -12,9 +15,11 @@ import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
+import me.lucko.helper.terminable.composite.CompositeTerminable;
 import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,8 +64,25 @@ public class QuestModule implements TerminableModule {
     sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
 
     // Debug
-    UUID randomUuid = UUID.randomUUID();
-    this.quests.put(randomUuid, new Quest(randomUuid, "&eTest Quest", Arrays.asList("&7This is a quest that", "&7is used for testing only.")));
+    UUID questUuid = UUID.fromString("3250dba7-f3fe-42a9-9f15-9ad5da3b9b0f"); // very random uuid indeed
+    UUID objectiveUuid = UUID.fromString("76563110-ed8c-4844-b775-683f4fdfc871");
+    Quest newQuest = new Quest(questUuid, "&eTest Quest", Arrays.asList("&7This is a quest that", "&7is used for testing only."));
+
+    // Create demo reward
+    JSONObject object = new JSONObject();
+    object.put("command", "give %1$s dirt 32");
+    object.put("message", "&aYou won 32x Dirt!");
+    newQuest.getRewards().add(new ConsoleCommandReward(UUID.randomUUID(), "&732x Dirt", object));
+
+    // Create demo objective
+    JSONObject objectiveJson = new JSONObject(); // funny naming
+    objectiveJson.put("type", "CHICKEN");
+    objectiveJson.put("amount", 10);
+    Objective objective = new KillEntityObjective(objectiveUuid, "&7Kill 10 Chickens", objectiveJson);
+    objective.registerListeners(CompositeTerminable.create());
+    newQuest.getObjectives().add(objective);
+
+    this.quests.put(questUuid, newQuest);
 
     // Create main quests command
     Commands.create()

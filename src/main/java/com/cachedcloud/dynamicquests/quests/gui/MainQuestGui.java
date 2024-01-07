@@ -3,8 +3,10 @@ package com.cachedcloud.dynamicquests.quests.gui;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
+import com.cachedcloud.dynamicquests.utils.GuiUtil;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Item;
@@ -53,6 +55,10 @@ public class MainQuestGui extends PaginatedGui {
 
   @Override
   public void redraw() {
+    // Fill gui with filler items
+    GuiUtil.fill(this);
+
+    // Handle pagination
     super.redraw();
   }
 
@@ -69,10 +75,22 @@ public class MainQuestGui extends PaginatedGui {
           .name(quest.getName())
           .lore(quest.getDescription())
           .apply(builder -> {
+            // Add objectives section
+            builder.lore("", "&eObjectives");
+            for (Objective objective : quest.getObjectives()) {
+              builder.lore("&7- " + objective.getName());
+            }
+            if (quest.getObjectives().size() == 0) { // this should never occur, but it's great for debugging
+              builder.lore("&7None");
+            }
+
             // Add rewards section
-            builder.lore("");
+            builder.lore("", "&eRewards");
             for (Reward reward : quest.getRewards()) {
               builder.lore("&7- " + reward.getName());
+            }
+            if (quest.getRewards().size() == 0) { // again, shouldn't happen, but great to have
+              builder.lore("&7None");
             }
 
             // Enchant if this quest is active
@@ -85,14 +103,15 @@ public class MainQuestGui extends PaginatedGui {
             // If the player does not have an active quest, OR this quest is the active quest,
             // allow the player to open the quest action GUI
             if (activeQuest == null || quest.equals(activeQuest)) {
-              Gui actionGui = new QuestActionGui(player, quest, !quest.equals(activeQuest));
+              Gui actionGui = new QuestActionGui(player, progressModule, quest, !quest.equals(activeQuest));
               actionGui.setFallbackGui(p -> paginatedGui);
               paginatedGui.close();
               actionGui.open();
 
             } else {
               // Send message indicating that the player is already doing a quest
-              Players.msg(player, questModule.getMessageModule().getAndFormat(StorageKey.MAIN_MENU_CLICK_FAILED));
+              Players.msg(player, questModule.getMessageModule().getAndFormat(StorageKey.MENU_ACTIVE_QUEST_ERROR));
+              paginatedGui.close();
             }
           });
     }).collect(Collectors.toList());

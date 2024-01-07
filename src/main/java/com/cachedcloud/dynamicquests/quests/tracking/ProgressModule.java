@@ -4,6 +4,7 @@ import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
@@ -12,6 +13,7 @@ import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
 import me.lucko.helper.utils.Players;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -36,14 +38,17 @@ public class ProgressModule implements TerminableModule {
   private static final String CREATE_PROGRESS_TABLE = "CREATE TABLE IF NOT EXISTS quest_progress (" +
       "`player_uuid` varchar(36) NOT NULL, " +
       "`quest_uuid` varchar(64) NOT NULL, " +
-      "`data` TEXT NOT NULL)";
+      "`data` TEXT NOT NULL, " +
+      "PRIMARY KEY (`player_uuid`))";
   private static final String GET_PROGRESS = "SELECT * FROM `quest_progress` WHERE `player_uuid` = ?";
   private static final String CREATE_PROGRESS = "INSERT INTO `quest_progress` (`player_uuid`, `quest_uuid`, `data`) VALUES (?, ?, ?)";
   private static final String UPDATE_QUEST_PROGRESS = "UPDATE `quest_progress` SET `quest_uuid` = ?, `data` = ? WHERE `player_uuid` = ?";
+  private static final String DELETE_QUEST_PROGRESS = "DELETE FROM `quest_progress` WHERE `player_uuid` = ?";
 
   // Constructor params
   private final Sql sql;
   private final QuestModule questModule;
+  @Getter
   private final MessageModule messageModule;
 
   // QuestProgress instance that belongs to a certain player
@@ -59,8 +64,44 @@ public class ProgressModule implements TerminableModule {
     // Get progress of ongoing quest when logging in
     Events.subscribe(PlayerJoinEvent.class)
         .handler(event -> {
+          // Cancel join message
+          event.joinMessage(Component.empty());
+
           // Load player progress on join
-          this.loadProgress(event.getPlayer().getUniqueId());
+          this.loadProgress(event.getPlayer().getUniqueId()).thenAcceptSync(progress -> {
+            // If the player does not have an active quest, prompt them to start one
+            Player player = event.getPlayer();
+            if (progress == null) {
+              Players.msg(player, messageModule.getAndFormat(StorageKey.JOIN_QUEST_AVAILABLE, player.getName()));
+              return;
+            }
+
+            // Calculate total progress and required progress
+            int totalRequired = 0;
+            int totalComplete = 0;
+
+            // Loop through the progress entries for all objectives
+            for (QuestProgress.ProgressEntry entry : progress.getProgress().values()) {
+              totalRequired += entry.getRequirement();
+              totalComplete += entry.getProgress().intValue();
+            }
+            totalRequired = Math.max(totalRequired, 1); // For debugging in case there are no objectives
+
+            // Calculate percentage
+            int percentageComplete = (int) (((double) totalComplete / totalRequired) * 100);
+            System.out.println(percentageComplete);
+
+            // Send message
+            Players.msg(
+                player,
+                messageModule.getAndFormat(
+                    StorageKey.JOIN_QUEST_PROGRESS,
+                    percentageComplete,
+                    progress.getQuest().getName(),
+                    player.getName()
+                )
+            );
+          });
         }).bindWith(consumer);
 
     // Store progress of ongoing quest when logging out (and remove it from cache)
@@ -68,8 +109,11 @@ public class ProgressModule implements TerminableModule {
         .filter(event -> this.progressMap.containsKey(event.getPlayer().getUniqueId()))
         .handler(event -> {
           // Save data and then remove the quest progress from the cache
-          this.updateQuestProgress(event.getPlayer().getUniqueId()).thenRunSync(() -> {
+          this.updateQuestProgress(event.getPlayer().getUniqueId()).thenAcceptSync(progress -> {
+            if (progress == null) return;
+
             this.progressMap.remove(event.getPlayer().getUniqueId());
+            this.cancelTracking(event.getPlayer().getUniqueId(), progress.getQuest());
           });
         }).bindWith(consumer);
 
@@ -80,6 +124,13 @@ public class ProgressModule implements TerminableModule {
         this.updateQuestProgress(uuid);
       });
     }, 5, TimeUnit.MINUTES, 5, TimeUnit.MINUTES);
+
+    // Make sure all data is saved on shutdown
+    consumer.bind(() -> {
+      this.progressMap.forEach((uuid, progress) -> {
+        this.updateQuestProgress(uuid);
+      });
+    });
   }
 
   /**
@@ -110,11 +161,34 @@ public class ProgressModule implements TerminableModule {
   }
 
   /**
+   * Delete the progress of a certain player
+   * @param playerUuid the player to remove the data for
+   */
+  public void deleteProgress(UUID playerUuid, Quest quest) {
+    // Remove progress from cache
+    this.progressMap.remove(playerUuid);
+
+    this.cancelTracking(playerUuid, quest);
+
+    // Delete entry from database
+    this.sql.executeAsync(DELETE_QUEST_PROGRESS, ps -> {
+      ps.setString(1, playerUuid.toString());
+    });
+  }
+
+  public void cancelTracking(UUID playerUuid, Quest quest) {
+    // Loop through objectives and remove player uuid from tracked list
+    quest.getObjectives().forEach(objective -> {
+      objective.unTrackPlayer(playerUuid);
+    });
+  }
+
+  /**
    * Save the quest progress to the database
    *
    * @param playerUuid the player to save the data for
    */
-  private Promise<Void> updateQuestProgress(UUID playerUuid) {
+  private Promise<QuestProgress> updateQuestProgress(UUID playerUuid) {
     // Get quest progress for player
     QuestProgress progress = this.progressMap.get(playerUuid);
 
@@ -126,7 +200,7 @@ public class ProgressModule implements TerminableModule {
       ps.setString(1, progress.getQuest().getUuid().toString());
       ps.setString(2, progress.serialize());
       ps.setString(3, playerUuid.toString());
-    });
+    }).thenApplyAsync(nothing -> progress);
   }
 
   /**
@@ -134,9 +208,9 @@ public class ProgressModule implements TerminableModule {
    *
    * @param playerUuid the player to load the information for
    */
-  private void loadProgress(UUID playerUuid) {
+  private Promise<QuestProgress> loadProgress(UUID playerUuid) {
     // Fetch quest progress from database
-    sql.queryAsync(GET_PROGRESS, ps -> {
+    return sql.queryAsync(GET_PROGRESS, ps -> {
       ps.setString(1, playerUuid.toString());
     }, resultSet -> {
       if (!resultSet.next()) return null;
@@ -150,12 +224,14 @@ public class ProgressModule implements TerminableModule {
       if (quest == null) return null; // this can only happen when quests are deleted while players still use it
 
       return new QuestProgress(playerUuid, quest, json);
-    }).thenAcceptSync(progressOptional -> {
+    }).thenApplyAsync(progressOptional -> {
       // Check if any progress was fetched
-      if (progressOptional.isEmpty()) return;
+      if (progressOptional.isEmpty()) return null;
 
       // Store progress
-      this.progressMap.put(playerUuid, progressOptional.get());
+      QuestProgress progress = progressOptional.get();
+      this.progressMap.put(playerUuid, progress);
+      return progress;
     });
   }
 

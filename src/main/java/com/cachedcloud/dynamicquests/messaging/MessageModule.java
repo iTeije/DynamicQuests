@@ -32,10 +32,10 @@ public class MessageModule implements TerminableModule {
    * @param params custom parameters of the message
    * @return the formatted message
    */
-  public String getAndFormat(StorageKey key, String... params) {
+  public String getAndFormat(StorageKey key, Object... params) {
     return String.format(
         this.messages.getOrDefault(key.getPath(), "An error occurred while sending message (" + key.getPath() + ")"),
-        (Object[]) params
+        params
     );
   }
 }

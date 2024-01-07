@@ -22,7 +22,7 @@ public class Quest {
   private final List<Objective> objectives = new ArrayList<>();
 
   public Optional<Objective> getObjective(UUID objectiveUuid) {
-    return objectives.stream().filter(o -> o.getUuid() == objectiveUuid).findFirst();
+    return objectives.stream().filter(o -> o.getUuid().equals(objectiveUuid)).findFirst();
   }
 
   @Override
