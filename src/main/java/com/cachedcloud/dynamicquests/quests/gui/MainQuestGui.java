@@ -6,6 +6,7 @@ import com.cachedcloud.dynamicquests.quests.QuestModule;
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
+import com.cachedcloud.dynamicquests.quests.tracking.QuestProgress;
 import com.cachedcloud.dynamicquests.utils.GuiUtil;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
@@ -67,7 +68,9 @@ public class MainQuestGui extends PaginatedGui {
     Collection<Quest> quests = questModule.getQuests();
 
     // Get active Quest
-    Quest activeQuest = progressModule.getCurrentQuest(player.getUniqueId());
+    QuestProgress progress = progressModule.getCurrentQuestProgress(player.getUniqueId());
+    Quest activeQuest = progress != null ? progress.getQuest() : null;
+    boolean appendProgress = activeQuest != null;
 
     // Create a menu item for all quests
     return quests.stream().map(quest -> {
@@ -78,9 +81,12 @@ public class MainQuestGui extends PaginatedGui {
             // Add objectives section
             builder.lore("", "&eObjectives");
             for (Objective objective : quest.getObjectives()) {
-              builder.lore("&7- " + objective.getName());
+              // If the player is currently doing this quest, append the progress of each objective
+              builder.lore("&7- " + objective.getName() +
+                  (appendProgress ? "&7: &a" + progressModule.getObjectiveProgressPercentage(progress, objective) + "%" : "")
+              );
             }
-            if (quest.getObjectives().size() == 0) { // this should never occur, but it's great for debugging
+            if (quest.getObjectives().size() == 0) { // this should never occur, but it's great for debugging todo remove
               builder.lore("&7None");
             }
 
@@ -89,7 +95,7 @@ public class MainQuestGui extends PaginatedGui {
             for (Reward reward : quest.getRewards()) {
               builder.lore("&7- " + reward.getName());
             }
-            if (quest.getRewards().size() == 0) { // again, shouldn't happen, but great to have
+            if (quest.getRewards().size() == 0) { // again, shouldn't happen, but great to have todo remove
               builder.lore("&7None");
             }
 

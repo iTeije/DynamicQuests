@@ -4,6 +4,7 @@ import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Events;
@@ -77,26 +78,12 @@ public class ProgressModule implements TerminableModule {
               return;
             }
 
-            // Calculate total progress and required progress
-            int totalRequired = 0;
-            int totalComplete = 0;
-
-            // Loop through the progress entries for all objectives
-            for (QuestProgress.ProgressEntry entry : progress.getProgress().values()) {
-              totalRequired += entry.getRequirement();
-              totalComplete += entry.getProgress().intValue();
-            }
-            totalRequired = Math.max(totalRequired, 1); // For debugging in case there are no objectives
-
-            // Calculate percentage
-            int percentageComplete = (int) (((double) totalComplete / totalRequired) * 100);
-
             // Send message
             Players.msg(
                 player,
                 messageModule.getAndFormat(
                     StorageKey.JOIN_QUEST_PROGRESS,
-                    percentageComplete,
+                    getQuestProgressPercentage(progress),
                     progress.getQuest().getName(),
                     player.getName()
                 )
@@ -235,15 +222,12 @@ public class ProgressModule implements TerminableModule {
     });
   }
 
-  public Quest getCurrentQuest(UUID playerUuid) {
+  public QuestProgress getCurrentQuestProgress(UUID playerUuid) {
     // Check if player has an ongoing quest at all
     if (!(this.progressMap.containsKey(playerUuid))) return null;
 
-    // Get quest progress for player
-    QuestProgress progress = this.progressMap.get(playerUuid);
-
     // Return quest
-    return progress.getQuest();
+    return this.progressMap.get(playerUuid);
   }
 
   /**
@@ -279,5 +263,35 @@ public class ProgressModule implements TerminableModule {
 
     // Send confirmation message
     Players.msg(player, messageModule.getAndFormat(StorageKey.QUEST_COMPLETE, quest.getName()));
+  }
+
+  /* Get the quest progress as a total percentage, this will include all objectives */
+  public int getQuestProgressPercentage(QuestProgress progress) {
+    // Calculate total progress and required progress
+    int totalRequired = 0;
+    int totalComplete = 0;
+
+    // Loop through the progress entries for all objectives
+    for (QuestProgress.ProgressEntry entry : progress.getProgress().values()) {
+      totalRequired += entry.getRequirement();
+      totalComplete += entry.getProgress().intValue();
+    }
+    totalRequired = Math.max(totalRequired, 1); // For debugging in case there are no objectives
+
+    // Calculate percentage
+    return (int) (((double) totalComplete / totalRequired) * 100);
+  }
+
+  /* Get the progress of a certain objective as a percentage, will return -1 if any parameters are invalid  */
+  public int getObjectiveProgressPercentage(QuestProgress progress, Objective objective) {
+    // Make sure variables are valid
+    if (progress == null || objective == null) return -1;
+
+    // Get progress entry from QuestProgress instance
+    QuestProgress.ProgressEntry entry = progress.getProgress().get(objective.getUuid());
+    if (entry == null) return -1;
+
+    // Calculate percentage
+    return (int) (((double) entry.getProgress().intValue() / entry.getRequirement()) * 100);
   }
 }
