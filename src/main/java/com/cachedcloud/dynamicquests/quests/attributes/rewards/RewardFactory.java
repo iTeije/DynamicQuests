@@ -12,6 +12,9 @@ public class RewardFactory implements Factory<Reward> {
     if (type.equalsIgnoreCase("consolecommand")) {
       return new ConsoleCommandReward(uuid, name, attributes);
     }
+    // If you want rewards that implement an API, you can write these yourself.
+    // The only thing that's configurable in game is a command anyway.
+
     return null;
   }
 

@@ -8,7 +8,7 @@ import com.cachedcloud.dynamicquests.quests.attributes.objectives.types.KillEnti
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.types.ConsoleCommandReward;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
-import com.cachedcloud.dynamicquests.quests.gui.admin.QuestAdminGui;
+import com.cachedcloud.dynamicquests.quests.gui.admin.MainAdminGui;
 import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -106,7 +106,7 @@ public class QuestModule implements TerminableModule {
           // Check if plugin has been initialized
           if (initialized) {
             // Open admin GUI
-            new QuestAdminGui(cmd.sender(), this).open();
+            new MainAdminGui(cmd.sender(), this).open();
           } else {
             // Send error message
             cmd.reply(messageModule.getAndFormat(StorageKey.PENDING_LOAD_ERROR));
