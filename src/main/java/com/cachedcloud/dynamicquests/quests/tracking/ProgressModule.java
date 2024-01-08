@@ -46,6 +46,7 @@ public class ProgressModule implements TerminableModule {
   private static final String CREATE_PROGRESS = "INSERT INTO `quest_progress` (`player_uuid`, `quest_uuid`, `data`) VALUES (?, ?, ?)";
   private static final String UPDATE_QUEST_PROGRESS = "UPDATE `quest_progress` SET `quest_uuid` = ?, `data` = ? WHERE `player_uuid` = ?";
   private static final String DELETE_QUEST_PROGRESS = "DELETE FROM `quest_progress` WHERE `player_uuid` = ?";
+  private static final String DELETE_PROGRESS_FOR_QUEST = "DELETE FROM `quest_progress` WHERE `quest_uuid` = ?";
 
   // Constructor params
   private final Sql sql;
@@ -172,6 +173,29 @@ public class ProgressModule implements TerminableModule {
     // Delete entry from database
     this.sql.executeAsync(DELETE_QUEST_PROGRESS, ps -> {
       ps.setString(1, playerUuid.toString());
+    });
+  }
+
+  /**
+   * Delete the progress of all players that is related to a certain quest uuid
+   * @param quest the quest that is deleted
+   */
+  public void deleteProgressForQuest(Quest quest) {
+    // Delete from db
+    sql.executeAsync(DELETE_PROGRESS_FOR_QUEST, ps -> {
+      ps.setString(1, quest.getUuid().toString());
+    });
+
+    // Loop through all active progress objects
+    this.progressMap.entrySet().forEach(entry -> {
+      if (entry.getValue().getQuest().getUuid().equals(quest.getUuid())) {
+        // Cancel quest
+        this.progressMap.remove(entry.getKey());
+        this.cancelTracking(entry.getKey(), quest);
+
+        // Tell the player
+        Players.msg(Players.getNullable(entry.getKey()), messageModule.getAndFormat(StorageKey.QUEST_DELETED));
+      }
     });
   }
 

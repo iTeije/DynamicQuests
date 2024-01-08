@@ -13,6 +13,7 @@ public enum StorageKey {
 
   QUEST_COMPLETE("quest-complete"),
   OBJECTIVE_COMPLETE("objective-complete"),
+  QUEST_DELETED("quest-deleted"),
 
   MENU_ACTIVE_QUEST_ERROR("menu.active-quest-error"),
   MENU_QUEST_START_SUCCESS("menu.quest-start-success"),

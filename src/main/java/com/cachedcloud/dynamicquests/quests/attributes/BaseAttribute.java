@@ -10,6 +10,7 @@ public interface BaseAttribute {
 
   UUID getUuid();
   String getName();
+  String getType();
   JSONObject getJson(); // the subattributes (i.e. configuration for a specific reward or objective)
 
   void updateAttribute(String key, String input);

@@ -1,6 +1,7 @@
 package com.cachedcloud.dynamicquests.quests.attributes.rewards.types;
 
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
+import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.JSONException;
@@ -14,7 +15,7 @@ public class ConsoleCommandReward extends Reward {
   private String command;
 
   public ConsoleCommandReward(UUID uuid, String name, JSONObject json) {
-    super(uuid, name, json);
+    super(uuid, name, json, RewardType.CONSOLE_COMMAND);
   }
 
   @Override

@@ -23,18 +23,20 @@ public abstract class Objective implements BaseAttribute {
 
   private final UUID uuid;
   private final JSONObject json; // objective attributes
+  private final ObjectiveType type;
 
   @Setter private String name;
   private int requirement;
 
   private final Map<UUID, QuestProgress> trackedPlayers = new HashMap<>();
 
-  public Objective(UUID uuid, String name, JSONObject json) {
+  public Objective(UUID uuid, String name, JSONObject json, ObjectiveType type) {
     this.uuid = uuid;
     this.name = name;
     this.json = json;
     parseJson(json);
     this.requirement = json.getInt("amount");
+    this.type = type;
   }
 
   public void trackPlayer(UUID player, QuestProgress progress) {
@@ -59,6 +61,10 @@ public abstract class Objective implements BaseAttribute {
 
   public boolean isTracking(UUID playerUuid) {
     return this.trackedPlayers.containsKey(playerUuid);
+  }
+
+  public String getType() {
+    return this.type.name();
   }
 
   @Override

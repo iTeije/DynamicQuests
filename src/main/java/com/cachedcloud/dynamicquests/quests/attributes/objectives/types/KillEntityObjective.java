@@ -1,6 +1,7 @@
 package com.cachedcloud.dynamicquests.quests.attributes.objectives.types;
 
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveType;
 import me.lucko.helper.Events;
 import me.lucko.helper.event.filter.EventFilters;
 import me.lucko.helper.terminable.TerminableConsumer;
@@ -18,7 +19,7 @@ public class KillEntityObjective extends Objective {
   private EntityType type;
 
   public KillEntityObjective(UUID uuid, String name, JSONObject json) {
-    super(uuid, name, json);
+    super(uuid, name, json, ObjectiveType.KILL_ENTITY);
   }
 
   @Override

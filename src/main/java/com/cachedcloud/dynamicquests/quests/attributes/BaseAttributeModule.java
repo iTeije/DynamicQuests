@@ -19,6 +19,7 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
   private final String getAttributesStatement;
   private final String createAttributeStatement;
   private final String updateAttributeStatement;
+  private final String deleteAttributeStatement;
 
   private final Factory<T> factory;
   private final Sql sql;
@@ -36,6 +37,7 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
     getAttributesStatement = "SELECT * FROM `" + attributeName + "` WHERE `quest_uuid` = ?";
     createAttributeStatement = "INSERT INTO `" + attributeName + "`(`uuid`, `quest_uuid`, `name`, `type`, `attributes`) VALUES (?, ?, ?, ?, ?)";
     updateAttributeStatement = "UPDATE `" + attributeName + "` SET `attributes` = ?, `name` = ? WHERE `uuid` = ?";
+    deleteAttributeStatement = "DELETE FROM `" + attributeName + "` WHERE `uuid` = ?";
   }
 
   @Override
@@ -72,6 +74,30 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
 
     // Call to abstract apply method
     applyAttributes(quest, attributeOptional.orElse(new ArrayList<>()));
+  }
+
+  public void createAttribute(Quest quest, T attribute) {
+    sql.executeAsync(createAttributeStatement, ps -> {
+      ps.setString(1, attribute.getUuid().toString());
+      ps.setString(2, quest.getUuid().toString());
+      ps.setString(3, attribute.getName());
+      ps.setString(4, attribute.getType());
+      ps.setObject(5, attribute.getJson());
+    });
+  }
+
+  public void updateAttribute(T attribute) {
+    sql.executeAsync(updateAttributeStatement, ps -> {
+      ps.setObject(1, attribute.getJson());
+      ps.setString(2, attribute.getName());
+      ps.setString(3, attribute.getUuid().toString());
+    });
+  }
+
+  public void deleteAttribute(T attribute) {
+    sql.executeAsync(deleteAttributeStatement, ps -> {
+      ps.setString(1, attribute.getUuid().toString());
+    });
   }
 
   public abstract void applyAttributes(Quest quest, List<T> attributes);

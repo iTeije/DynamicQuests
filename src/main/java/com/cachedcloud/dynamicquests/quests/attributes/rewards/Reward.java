@@ -17,12 +17,14 @@ public abstract class Reward implements BaseAttribute {
 
   private final UUID uuid;
   private final JSONObject json; // reward attributes
+  private final RewardType type;
 
   @Setter private String name;
 
-  public Reward(UUID uuid, String name, JSONObject json) {
+  public Reward(UUID uuid, String name, JSONObject json, RewardType type) {
     this.uuid = uuid;
     this.name = name;
+    this.type = type;
     this.json = json;
     parseJson(json);
   }
@@ -32,6 +34,10 @@ public abstract class Reward implements BaseAttribute {
     String msg = json.getString("completion_message");
 
     if (msg != null) Players.msg(player, msg);
+  }
+
+  public String getType() {
+    return this.type.name();
   }
 
   @Override

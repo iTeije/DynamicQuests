@@ -7,6 +7,7 @@ messages:
   join-quest-available: "&7Welcome, %1$s. There are new quests available! Use &e/quests &7to open the quests menu."
   objective-complete: "&e&lOBJECTIVE COMPLETE! &7Congratulations, you have completed a quest objective. Check &e/quests &7to track your progress."
   quest-complete: "&e&lQUEST COMPLETE! &7Congratulations, you have completed the %1$s &7Quest! You will receive your rewards shortly."
+  quest-deleted: "&cThe quest that you were playing was deleted by an admin. Your progress is lost."
   menu:
     active-quest-error: "&cYou have previously accepted a different quest. Please complete or cancel that one first."
     quest-start-success: "&7You have successfully &astarted &7the %1$s &7Quest. Check &e/quests &7for a detailed overview of the objectives."

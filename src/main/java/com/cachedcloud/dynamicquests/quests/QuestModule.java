@@ -41,6 +41,7 @@ public class QuestModule implements TerminableModule {
   private static final String GET_QUESTS = "SELECT * FROM `quests`";
   private static final String CREATE_QUEST = "INSERT INTO `quests` (`uuid`, `name`, `description`) VALUES (?, ?, ?)";
   private static final String UPDATE_QUEST = "UPDATE `quests` SET `name` = ?, `description` = ? WHERE `uuid` = ?";
+  private static final String DELETE_QUEST = "DELETE FROM `quests` WHERE `uuid` = ?";
 
   // Constructor params
   private final Sql sql;
@@ -151,6 +152,47 @@ public class QuestModule implements TerminableModule {
         Bukkit.getLogger().info("Quests and its attributes are fully initialized.");
       });
     });
+  }
+
+  /* Create a new Quest object and put it in the database */
+  public Quest createEmptyQuest() {
+    // Create new quest object
+    Quest quest = new Quest(UUID.randomUUID(), "Unnamed Quest", List.of("&7Empty description"));
+
+    // Create new database row
+    sql.executeAsync(CREATE_QUEST, ps -> {
+      ps.setString(1, quest.getUuid().toString());
+      ps.setString(2, quest.getName());
+      ps.setString(3, String.join("\\\\n", quest.getDescription()));
+    });
+
+    // Add to cache
+    this.quests.put(quest.getUuid(), quest);
+
+    return quest;
+  }
+
+  /* Update the database information on a Quest object */
+  public void updateQuest(Quest quest) {
+    sql.executeAsync(UPDATE_QUEST, ps -> {
+      ps.setString(1, quest.getName());
+      ps.setString(2, String.join("\\\\n", quest.getDescription()));
+      ps.setString(3, quest.getUuid().toString());
+    });
+  }
+
+  /* Delete a quest from the cache and from the database */
+  public void deleteQuest(UUID questUuid) {
+    // Remove from db
+    sql.executeAsync(DELETE_QUEST, ps -> {
+      ps.setString(1, questUuid.toString());
+    });
+
+    // Remove locally
+    Quest quest = this.quests.remove(questUuid);
+
+    // Delete and cancel player progress for this quest
+    this.progressModule.deleteProgressForQuest(quest);
   }
 
   public Collection<Quest> getQuests() {
