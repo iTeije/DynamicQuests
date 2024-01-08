@@ -4,6 +4,7 @@ import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -16,8 +17,8 @@ import java.util.UUID;
 public class Quest {
 
   private final UUID uuid;
-  private String name;
-  private List<String> description;
+  @Setter private String name;
+  @Setter private List<String> description; // immutable list
 
   private final List<Reward> rewards = new ArrayList<>();
   private final List<Objective> objectives = new ArrayList<>();

@@ -65,7 +65,7 @@ public class MainQuestGui extends PaginatedGui {
 
   private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, Player player, final ProgressModule progressModule, final QuestModule questModule) {
     // Create a collection of quests
-    Collection<Quest> quests = questModule.getQuests();
+    Collection<Quest> quests = questModule.getValidQuests();
 
     // Get active Quest
     QuestProgress progress = progressModule.getCurrentQuestProgress(player.getUniqueId());

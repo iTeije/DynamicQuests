@@ -3,8 +3,10 @@ package com.cachedcloud.dynamicquests.quests.attributes.objectives;
 import com.cachedcloud.dynamicquests.quests.attributes.BaseAttribute;
 import com.cachedcloud.dynamicquests.quests.tracking.QuestProgress;
 import lombok.Getter;
+import lombok.Setter;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.entity.Player;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -15,8 +17,9 @@ import java.util.UUID;
 public abstract class Objective implements BaseAttribute {
 
   private final UUID uuid;
-  private String name;
-  private JSONObject json; // objective attributes
+  private final JSONObject json; // objective attributes
+
+  @Setter private String name;
   private int requirement;
 
   private final Map<UUID, QuestProgress> trackedPlayers = new HashMap<>();
@@ -52,6 +55,29 @@ public abstract class Objective implements BaseAttribute {
     return this.trackedPlayers.containsKey(playerUuid);
   }
 
+  public void updateAttribute(String key, Object value) throws JSONException {
+    // Update the json object
+    this.json.put(key, value);
+
+    // Check if key is 'amount'
+    if (key.equals("amount")) requirement = (int) value;
+  }
+
   public abstract void registerListeners(TerminableConsumer consumer);
 
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Objective objective = (Objective) o;
+
+    return uuid.equals(objective.uuid);
+  }
+
+  @Override
+  public int hashCode() {
+    return uuid.hashCode();
+  }
 }

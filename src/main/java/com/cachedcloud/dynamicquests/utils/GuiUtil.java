@@ -21,4 +21,8 @@ public class GuiUtil {
     }
   }
 
+  public static ItemStack getDefaultFiller() {
+    return FILLER;
+  }
+
 }
