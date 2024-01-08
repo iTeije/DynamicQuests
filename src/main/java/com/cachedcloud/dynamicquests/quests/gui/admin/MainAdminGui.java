@@ -23,7 +23,7 @@ public class MainAdminGui extends PaginatedGui {
 
   public MainAdminGui(Player player, QuestModule questModule) {
     super(
-        paginatedGui -> buildQuestItems(paginatedGui, player, questModule.getQuests()),
+        paginatedGui -> buildQuestItems(paginatedGui, player, questModule, questModule.getQuests()),
         player,
         PaginatedGuiBuilder.create()
             .title("&8Quest Management")
@@ -63,7 +63,7 @@ public class MainAdminGui extends PaginatedGui {
     );
   }
 
-  private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, final Player player, final Collection<Quest> quests) {
+  private static List<Item> buildQuestItems(final PaginatedGui paginatedGui, final Player player, final QuestModule questModule, final Collection<Quest> quests) {
     // Create the admin version of the quest menu items
     return quests.stream().map(quest -> {
       return ItemStackBuilder.of(Material.PAPER)
@@ -77,7 +77,7 @@ public class MainAdminGui extends PaginatedGui {
               "&7Click to update quest &c(admin)"
           )
           .build(() -> {
-            QuestAdminGui questAdminGui = new QuestAdminGui(player, quest);
+            QuestAdminGui questAdminGui = new QuestAdminGui(player, quest, questModule);
             questAdminGui.setFallbackGui(p -> paginatedGui);
             paginatedGui.close();
             questAdminGui.open();

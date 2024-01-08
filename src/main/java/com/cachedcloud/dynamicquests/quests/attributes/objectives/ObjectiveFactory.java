@@ -2,6 +2,7 @@ package com.cachedcloud.dynamicquests.quests.attributes.objectives;
 
 import com.cachedcloud.dynamicquests.quests.attributes.Factory;
 import org.bukkit.Bukkit;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.NoSuchElementException;
@@ -24,6 +25,11 @@ public class ObjectiveFactory implements Factory<Objective> {
       return objectiveType.createInstance(uuid, name, json);
     } catch (NoSuchElementException exception) {
       Bukkit.getLogger().warning("ObjectiveType '" + type.toUpperCase() + "' does not exist.");
+    } catch (JSONException exception) {
+      Bukkit.getLogger().warning("Objective has invalid json data. (type " + type + ", uuid " + uuid.toString() +
+          ", name " + name + ", json: " + json.toString() + ")");
+      // Printing stack trace for a detailed description of the missing json key
+      exception.printStackTrace();
     }
 
     return null;

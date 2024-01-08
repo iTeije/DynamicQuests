@@ -4,9 +4,12 @@ import com.cachedcloud.dynamicquests.quests.attributes.BaseAttribute;
 import lombok.Getter;
 import lombok.Setter;
 import me.lucko.helper.utils.Players;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Getter
@@ -21,6 +24,7 @@ public abstract class Reward implements BaseAttribute {
     this.uuid = uuid;
     this.name = name;
     this.json = json;
+    parseJson(json);
   }
 
   public void sendRewardMessage(Player player) {
@@ -28,6 +32,26 @@ public abstract class Reward implements BaseAttribute {
     String msg = json.getString("completion_message");
 
     if (msg != null) Players.msg(player, msg);
+  }
+
+  @Override
+  public void updateAttribute(String key, String value) throws JSONException {
+    Object oldValue = json.has(key) ? json.get(key) : null;
+    // Update the json object
+    if (value == null) {
+      this.json.remove(key);
+    } else this.json.put(key, value);
+
+    // Reload json attributes in reward implementation
+    try {
+      parseJson(this.json);
+    } catch (JSONException | NullPointerException | NoSuchElementException e) {
+      Bukkit.getLogger().warning("Reward " + uuid.toString() + " has invalid json data because of the " +
+          key + ":" + value + " change.");
+      if (oldValue != null) {
+        this.json.put(key, oldValue);
+      } else this.json.remove(key);
+    }
   }
 
   public abstract void giveReward(Player player);

@@ -1,13 +1,21 @@
 package com.cachedcloud.dynamicquests.quests.gui.admin;
 
+import com.cachedcloud.dynamicquests.DynamicQuests;
 import com.cachedcloud.dynamicquests.quests.Quest;
+import com.cachedcloud.dynamicquests.quests.QuestModule;
+import com.cachedcloud.dynamicquests.quests.gui.admin.attributes.QuestObjectivesAdminGui;
+import com.cachedcloud.dynamicquests.quests.gui.admin.attributes.QuestRewardsAdminGui;
 import com.cachedcloud.dynamicquests.utils.GuiUtil;
+import com.cachedcloud.dynamicquests.utils.StringPrompt;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuPopulator;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+
+import java.util.Arrays;
+import java.util.function.Function;
 
 public class QuestAdminGui extends Gui {
 
@@ -20,10 +28,12 @@ public class QuestAdminGui extends Gui {
       .mask("100000001");
 
   private final Quest quest;
+  private final QuestModule questModule;
 
-  public QuestAdminGui(Player player, Quest quest) {
-    super(player, 4, "Edit Quest");
+  public QuestAdminGui(Player player, Quest quest, QuestModule questModule) {
+    super(player, 4, "&8Edit Quest");
     this.quest = quest;
+    this.questModule = questModule;
   }
 
   @Override
@@ -50,9 +60,44 @@ public class QuestAdminGui extends Gui {
             "&e[RIGHT-CLICK] &7to change description."
         )
         .build(() -> {
-          // todo right click
+          // Close menu
+          final Function<Player, Gui> fallback = getFallbackGui();
+          setFallbackGui(null);
+          close();
+          setFallbackGui(fallback);
+
+          // Start string prompt to change the name
+          StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new quest description. Use \"\\n\" to add a line break. (\"exit\" to cancel):", input -> {
+            // Check if input is valid
+            if (input != null) {
+              // todo properly update + sql
+              // Set description and split it on a literal "\n"
+              quest.setDescription(Arrays.asList(input.split("\\\\n")));
+            }
+
+            // Re-open menu
+            redraw();
+            open();
+          });
         }, () -> {
-          // todo left click
+          // Close menu
+          final Function<Player, Gui> fallback = getFallbackGui();
+          setFallbackGui(null);
+          close();
+          setFallbackGui(fallback);
+
+          // Start string prompt to change the name
+          StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new quest name (\"exit\" to cancel):", input -> {
+            // Check if input is valid
+            if (input != null) {
+              // todo properly update + sql
+              quest.setName(input);
+            }
+
+            // Re-open menu
+            redraw();
+            open();
+          });
         })
     );
 
@@ -65,12 +110,21 @@ public class QuestAdminGui extends Gui {
             "&8&o" + quest.getObjectives().size() + " objective(s)"
         )
         .build(() -> {
-          // todo open objectives menu
+          // Open objectives gui
+          QuestObjectivesAdminGui objectivesGui = new QuestObjectivesAdminGui(getPlayer(), quest, questModule);
+          objectivesGui.setFallbackGui(p -> this);
+
+          Function<Player, Gui> currentFallback = getFallbackGui();
+          setFallbackGui(null);
+
+          close();
+          objectivesGui.open();
+          setFallbackGui(currentFallback);
         })
     );
 
     // Add item that opens the rewards submenu
-    attributesPopulator.accept(ItemStackBuilder.of(Material.COPPER_INGOT)
+    attributesPopulator.accept(ItemStackBuilder.of(Material.GOLD_INGOT)
         .name("&e&lRewards")
         .lore(
             "&7Click to view, modify, or",
@@ -78,7 +132,16 @@ public class QuestAdminGui extends Gui {
             "&8&o" + quest.getRewards().size() + " reward(s)"
         )
         .build(() -> {
-          // todo open rewards menu
+          // Open rewards gui
+          QuestRewardsAdminGui rewardsGui = new QuestRewardsAdminGui(getPlayer(), quest, questModule);
+          rewardsGui.setFallbackGui(p -> this);
+
+          Function<Player, Gui> currentFallback = getFallbackGui();
+          setFallbackGui(null);
+
+          close();
+          rewardsGui.open();
+          setFallbackGui(currentFallback);
         })
     );
 

@@ -7,17 +7,18 @@ import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class KillEntityObjective extends Objective {
 
-  private final EntityType type;
+  private EntityType type;
 
   public KillEntityObjective(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    this.type = EntityType.valueOf(json.getString("entityType").toUpperCase());
   }
 
   @Override
@@ -33,5 +34,10 @@ public class KillEntityObjective extends Objective {
           // Increment progress
           super.incrementProgress(event.getDamager().getUniqueId(), 1);
         }).bindWith(consumer);
+  }
+
+  @Override
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+    this.type = EntityType.valueOf(json.getString("entityType").toUpperCase());
   }
 }

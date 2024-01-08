@@ -2,6 +2,7 @@ package com.cachedcloud.dynamicquests.quests.attributes.rewards;
 
 import com.cachedcloud.dynamicquests.quests.attributes.Factory;
 import org.bukkit.Bukkit;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.NoSuchElementException;
@@ -18,6 +19,11 @@ public class RewardFactory implements Factory<Reward> {
       return rewardType.createInstance(uuid, name, attributes);
     } catch (NoSuchElementException exception) {
       Bukkit.getLogger().info("RewardType '" + type.toUpperCase() + "' does not exist.");
+    } catch (JSONException exception) {
+      Bukkit.getLogger().warning("Reward has invalid json data. (type " + type + ", uuid " + uuid.toString() +
+          ", name " + name + ", json: " + attributes.toString() + ")");
+      // Printing stack trace for a detailed description of the missing json key
+      exception.printStackTrace();
     }
 
     return null;

@@ -118,6 +118,17 @@ public class ProgressModule implements TerminableModule {
         this.updateQuestProgress(uuid);
       });
     });
+
+    // In case the server was reloaded, load data of players that are currently online
+    Players.all().forEach(p -> {
+      loadProgress(p.getUniqueId())
+          .thenAcceptSync(progress -> {
+            if (progress != null) {
+              Players.msg(p, "&cThe server has been reloaded. If any issues arise with your quest progress, " +
+                  "please contact an admin.");
+            }
+          });
+    });
   }
 
   /**
@@ -149,6 +160,7 @@ public class ProgressModule implements TerminableModule {
 
   /**
    * Delete the progress of a certain player
+   *
    * @param playerUuid the player to remove the data for
    */
   public void deleteProgress(UUID playerUuid, Quest quest) {

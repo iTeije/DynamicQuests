@@ -6,17 +6,18 @@ import me.lucko.helper.event.filter.EventFilters;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class PlaceBlockObjective extends Objective {
 
-  private final Material blockType;
+  private Material blockType;
 
   public PlaceBlockObjective(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    this.blockType = Material.valueOf(json.getString("material").toUpperCase());
   }
 
   @Override
@@ -30,5 +31,10 @@ public class PlaceBlockObjective extends Objective {
           // Increment progress
           super.incrementProgress(event.getPlayer().getUniqueId(), 1);
         }).bindWith(consumer);
+  }
+
+  @Override
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+    this.blockType = Material.valueOf(json.getString("material").toUpperCase());
   }
 }

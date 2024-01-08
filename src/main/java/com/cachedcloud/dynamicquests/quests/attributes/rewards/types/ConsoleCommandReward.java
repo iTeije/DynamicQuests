@@ -3,17 +3,18 @@ package com.cachedcloud.dynamicquests.quests.attributes.rewards.types;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.Reward;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class ConsoleCommandReward extends Reward {
 
-  private final String command;
+  private String command;
 
   public ConsoleCommandReward(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    this.command = json.getString("command");
   }
 
   @Override
@@ -26,5 +27,10 @@ public class ConsoleCommandReward extends Reward {
 
     // Dispatch the command as console
     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formattedCommand);
+  }
+
+  @Override
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+    this.command = json.getString("command");
   }
 }

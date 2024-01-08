@@ -5,16 +5,21 @@ import com.cachedcloud.dynamicquests.quests.tracking.QuestProgress;
 import lombok.Getter;
 import lombok.Setter;
 import me.lucko.helper.terminable.TerminableConsumer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Getter
 public abstract class Objective implements BaseAttribute {
+
+  private Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
   private final UUID uuid;
   private final JSONObject json; // objective attributes
@@ -28,6 +33,7 @@ public abstract class Objective implements BaseAttribute {
     this.uuid = uuid;
     this.name = name;
     this.json = json;
+    parseJson(json);
     this.requirement = json.getInt("amount");
   }
 
@@ -55,16 +61,33 @@ public abstract class Objective implements BaseAttribute {
     return this.trackedPlayers.containsKey(playerUuid);
   }
 
-  public void updateAttribute(String key, Object value) throws JSONException {
+  @Override
+  public void updateAttribute(String key, String value) throws JSONException {
+    Object oldValue = json.has(key) ? json.get(key) : null;
     // Update the json object
-    this.json.put(key, value);
+    if (value == null) {
+      this.json.remove(key);
+    } else if (NUMERIC_PATTERN.matcher(value).matches()) {
+      this.json.put(key, Integer.parseInt(value));
+    } else {
+      this.json.put(key, value);
+    }
 
-    // Check if key is 'amount'
-    if (key.equals("amount")) requirement = (int) value;
+    try {
+      // Check if key is 'amount'
+      if (key.equals("amount")) requirement = Integer.parseInt(value);
+
+      parseJson(this.json);
+    } catch (JSONException | NullPointerException | NoSuchElementException | NumberFormatException e) {
+      Bukkit.getLogger().warning("Objective " + uuid.toString() + " has invalid json data because of the " +
+          key + ":" + value + " change.");
+      if (oldValue != null) {
+        this.json.put(key, oldValue);
+      } else this.json.remove(key);
+    }
   }
 
   public abstract void registerListeners(TerminableConsumer consumer);
-
 
   @Override
   public boolean equals(Object o) {

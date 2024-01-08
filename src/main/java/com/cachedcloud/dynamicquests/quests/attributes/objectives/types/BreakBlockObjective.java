@@ -6,17 +6,18 @@ import me.lucko.helper.event.filter.EventFilters;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BreakBlockObjective extends Objective {
 
-  private final Material blockType;
+  private Material blockType;
 
   public BreakBlockObjective(UUID uuid, String name, JSONObject json) {
     super(uuid, name, json);
-    this.blockType = Material.valueOf(json.getString("material").toUpperCase());
   }
 
   @Override
@@ -30,6 +31,11 @@ public class BreakBlockObjective extends Objective {
           // Increment progress
           super.incrementProgress(event.getPlayer().getUniqueId(), 1);
         }).bindWith(consumer);
+  }
+
+  @Override
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+    this.blockType = Material.valueOf(json.getString("material").toUpperCase());
   }
 }
 
