@@ -80,8 +80,9 @@ public class QuestObjectivesAdminGui extends Gui {
             StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new objective name (\"exit\" to cancel):", input -> {
               // Check if input is valid
               if (input != null) {
-                // todo properly update + sql
+                // Update objective and update database
                 objective.setName(input);
+                questModule.getObjectiveModule().updateAttribute(objective);
               }
 
               // Re-open menu
@@ -103,15 +104,19 @@ public class QuestObjectivesAdminGui extends Gui {
             // Create and open a confirmation menu
             ConfirmationGui confirmationGui = new ConfirmationGui(getPlayer(), "&8Delete Objective?",
                 accept -> {
-                  // todo delete objective + sql
+                  // Delete objective
                   quest.getObjectives().remove(objective);
+                  questModule.getObjectiveModule().deleteAttribute(objective);
 
                   // Close gui
                   accept.close();
                 }, Gui::close);
             confirmationGui.setFallbackGui(p -> this);
+            Function<Player, Gui> currentFallback = getFallbackGui();
+            setFallbackGui(null);
             close();
             confirmationGui.open();
+            setFallbackGui(currentFallback);
           })
           .build()
       );
@@ -138,7 +143,13 @@ public class QuestObjectivesAdminGui extends Gui {
         .lore("&7Click here to create a new",
             "&7objective.")
         .build(() -> {
-          // todo open menu to select type (ObjectiveType)
+          CreateAttributeGui gui = new CreateAttributeGui(getPlayer(), quest, questModule, true);
+          gui.setFallbackGui(p -> this);
+          Function<Player, Gui> currentFb = getFallbackGui();
+          setFallbackGui(null);
+          close();
+          gui.open();
+          setFallbackGui(currentFb);
         })
     );
   }

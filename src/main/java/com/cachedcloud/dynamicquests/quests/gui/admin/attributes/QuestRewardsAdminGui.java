@@ -80,8 +80,9 @@ public class QuestRewardsAdminGui extends Gui {
             StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new reward name (\"exit\" to cancel):", input -> {
               // Check if input is valid
               if (input != null) {
-                // todo properly update + sql
+                // Change name and update db
                 reward.setName(input);
+                questModule.getRewardModule().updateAttribute(reward);
               }
 
               // Re-open menu
@@ -103,8 +104,9 @@ public class QuestRewardsAdminGui extends Gui {
             // Create and open a confirmation menu
             ConfirmationGui confirmationGui = new ConfirmationGui(getPlayer(), "&8Delete Reward?",
                 accept -> {
-                  // todo delete reward + sql
+                  // Delete reward and remove from database
                   quest.getRewards().remove(reward);
+                  questModule.getRewardModule().deleteAttribute(reward);
 
                   // Close gui
                   accept.close();
@@ -141,7 +143,13 @@ public class QuestRewardsAdminGui extends Gui {
         .lore("&7Click here to create a new",
             "&7reward.")
         .build(() -> {
-          // todo open menu to select type (RewardType)
+          CreateAttributeGui gui = new CreateAttributeGui(getPlayer(), quest, questModule, false);
+          gui.setFallbackGui(p -> this);
+          Function<Player, Gui> currentFb = getFallbackGui();
+          setFallbackGui(null);
+          close();
+          gui.open();
+          setFallbackGui(currentFb);
         })
     );
   }

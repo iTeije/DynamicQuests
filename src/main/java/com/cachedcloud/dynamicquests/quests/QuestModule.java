@@ -2,11 +2,8 @@ package com.cachedcloud.dynamicquests.quests;
 
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
-import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.ObjectiveModule;
-import com.cachedcloud.dynamicquests.quests.attributes.objectives.types.KillEntityObjective;
 import com.cachedcloud.dynamicquests.quests.attributes.rewards.RewardModule;
-import com.cachedcloud.dynamicquests.quests.attributes.rewards.types.ConsoleCommandReward;
 import com.cachedcloud.dynamicquests.quests.gui.MainQuestGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.MainAdminGui;
 import com.cachedcloud.dynamicquests.quests.tracking.ProgressModule;
@@ -15,11 +12,9 @@ import lombok.RequiredArgsConstructor;
 import me.lucko.helper.Commands;
 import me.lucko.helper.sql.Sql;
 import me.lucko.helper.terminable.TerminableConsumer;
-import me.lucko.helper.terminable.composite.CompositeTerminable;
 import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +42,9 @@ public class QuestModule implements TerminableModule {
   private final Sql sql;
   @Getter
   private final MessageModule messageModule;
+  @Getter
   private final RewardModule rewardModule;
+  @Getter
   private final ObjectiveModule objectiveModule;
 
   // List of all quests
@@ -64,27 +61,6 @@ public class QuestModule implements TerminableModule {
 
     // Create table and then query all quests (why? because concurrency will destroy
     sql.executeAsync(CREATE_QUESTS_TABLE).thenRunSync(this::initializeQuests);
-
-    // Debug
-    UUID questUuid = UUID.fromString("3250dba7-f3fe-42a9-9f15-9ad5da3b9b0f"); // very random uuid indeed
-    UUID objectiveUuid = UUID.fromString("76563110-ed8c-4844-b775-683f4fdfc871");
-    Quest newQuest = new Quest(questUuid, "&eTest Quest", Arrays.asList("&7This is a quest that", "&7is used for testing only."));
-
-    // Create demo reward
-    JSONObject object = new JSONObject();
-    object.put("command", "give %1$s dirt 32");
-    object.put("completion_message", "&aYou won 32x Dirt!");
-    newQuest.getRewards().add(new ConsoleCommandReward(UUID.randomUUID(), "&732x Dirt", object));
-
-    // Create demo objective
-    JSONObject objectiveJson = new JSONObject(); // funny naming
-    objectiveJson.put("entityType", "CHICKEN");
-    objectiveJson.put("amount", 10);
-    Objective objective = new KillEntityObjective(objectiveUuid, "&7Kill 10 Chickens", objectiveJson);
-    objective.registerListeners(CompositeTerminable.create());
-    newQuest.getObjectives().add(objective);
-
-    this.quests.put(questUuid, newQuest);
 
     // Create main quests command
     Commands.create()
@@ -127,7 +103,7 @@ public class QuestModule implements TerminableModule {
         String name = resultSet.getString("name");
         String description = resultSet.getString("description");
         // Create quest instance and add it to the temporary list
-        quests.put(uuid, new Quest(uuid, name, Arrays.asList(description.split("\n"))));
+        quests.put(uuid, new Quest(uuid, name, Arrays.asList(description.split("\\\\n"))));
       }
       return quests;
     }).thenAcceptSync(optionalList -> {
@@ -157,13 +133,13 @@ public class QuestModule implements TerminableModule {
   /* Create a new Quest object and put it in the database */
   public Quest createEmptyQuest() {
     // Create new quest object
-    Quest quest = new Quest(UUID.randomUUID(), "Unnamed Quest", List.of("&7Empty description"));
+    Quest quest = new Quest(UUID.randomUUID(), "&eUnnamed Quest", List.of("&7Empty description"));
 
     // Create new database row
     sql.executeAsync(CREATE_QUEST, ps -> {
       ps.setString(1, quest.getUuid().toString());
       ps.setString(2, quest.getName());
-      ps.setString(3, String.join("\\\\n", quest.getDescription()));
+      ps.setString(3, String.join("\\n", quest.getDescription()));
     });
 
     // Add to cache
@@ -176,7 +152,7 @@ public class QuestModule implements TerminableModule {
   public void updateQuest(Quest quest) {
     sql.executeAsync(UPDATE_QUEST, ps -> {
       ps.setString(1, quest.getName());
-      ps.setString(2, String.join("\\\\n", quest.getDescription()));
+      ps.setString(2, String.join("\\n", quest.getDescription()));
       ps.setString(3, quest.getUuid().toString());
     });
   }

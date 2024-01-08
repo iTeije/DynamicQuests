@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class ConsoleCommandReward extends Reward {
@@ -31,7 +30,7 @@ public class ConsoleCommandReward extends Reward {
   }
 
   @Override
-  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, IllegalArgumentException {
     this.command = json.getString("command");
   }
 }

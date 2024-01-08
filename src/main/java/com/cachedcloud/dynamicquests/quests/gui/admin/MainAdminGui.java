@@ -21,6 +21,8 @@ public class MainAdminGui extends PaginatedGui {
   private static final MenuScheme SCHEME = new MenuScheme()
       .maskEmpty(5);
 
+  private final QuestModule questModule;
+
   public MainAdminGui(Player player, QuestModule questModule) {
     super(
         paginatedGui -> buildQuestItems(paginatedGui, player, questModule, questModule.getQuests()),
@@ -43,6 +45,7 @@ public class MainAdminGui extends PaginatedGui {
                     .lore("&8&oPage " + pageInfo.getCurrent() + "/" + pageInfo.getSize())
                     .build())
     );
+    this.questModule = questModule;
   }
 
   @Override
@@ -51,6 +54,7 @@ public class MainAdminGui extends PaginatedGui {
     GuiUtil.fill(this);
 
     // Handle pagination
+    updateContent(buildQuestItems(this, getPlayer(), questModule, questModule.getQuests()));
     super.redraw();
 
     // Add button to create new quest
@@ -58,7 +62,14 @@ public class MainAdminGui extends PaginatedGui {
         .name("&e&lCreate Quest")
         .lore("&7Click this item to start", "&7the setup of creating", "&7a new quest.")
         .build(() -> {
+          // Create a new quest
+          Quest newQuest = this.questModule.createEmptyQuest();
 
+          // Open admin gui
+          QuestAdminGui questAdminGui = new QuestAdminGui(getPlayer(), newQuest, questModule);
+          questAdminGui.setFallbackGui(p -> this);
+          close();
+          questAdminGui.open();
         })
     );
   }

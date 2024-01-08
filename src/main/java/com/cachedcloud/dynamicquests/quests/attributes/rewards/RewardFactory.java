@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class RewardFactory implements Factory<Reward> {
@@ -17,7 +16,7 @@ public class RewardFactory implements Factory<Reward> {
 
       // Create an instance of the corresponding Reward
       return rewardType.createInstance(uuid, name, attributes);
-    } catch (NoSuchElementException exception) {
+    } catch (IllegalArgumentException exception) {
       Bukkit.getLogger().info("RewardType '" + type.toUpperCase() + "' does not exist.");
     } catch (JSONException exception) {
       Bukkit.getLogger().warning("Reward has invalid json data. (type " + type + ", uuid " + uuid.toString() +

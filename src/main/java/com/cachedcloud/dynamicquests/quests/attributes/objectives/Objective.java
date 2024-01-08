@@ -12,7 +12,6 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -84,7 +83,7 @@ public abstract class Objective implements BaseAttribute {
       if (key.equals("amount")) requirement = Integer.parseInt(value);
 
       parseJson(this.json);
-    } catch (JSONException | NullPointerException | NoSuchElementException | NumberFormatException e) {
+    } catch (JSONException | NullPointerException | IllegalArgumentException e) {
       Bukkit.getLogger().warning("Objective " + uuid.toString() + " has invalid json data because of the " +
           key + ":" + value + " change.");
       if (oldValue != null) {

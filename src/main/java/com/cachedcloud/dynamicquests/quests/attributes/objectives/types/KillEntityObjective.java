@@ -11,7 +11,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class KillEntityObjective extends Objective {
@@ -38,7 +37,7 @@ public class KillEntityObjective extends Objective {
   }
 
   @Override
-  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, IllegalArgumentException {
     this.type = EntityType.valueOf(json.getString("entityType").toUpperCase());
   }
 }

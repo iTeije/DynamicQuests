@@ -10,7 +10,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class PlaceBlockObjective extends Objective {
@@ -35,7 +34,7 @@ public class PlaceBlockObjective extends Objective {
   }
 
   @Override
-  public void parseJson(JSONObject json) throws JSONException, NullPointerException, NoSuchElementException {
+  public void parseJson(JSONObject json) throws JSONException, NullPointerException, IllegalArgumentException {
     this.blockType = Material.valueOf(json.getString("material").toUpperCase());
   }
 }

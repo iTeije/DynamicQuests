@@ -4,6 +4,8 @@ import com.cachedcloud.dynamicquests.DynamicQuests;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
 import com.cachedcloud.dynamicquests.quests.attributes.BaseAttribute;
+import com.cachedcloud.dynamicquests.quests.attributes.BaseAttributeModule;
+import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import com.cachedcloud.dynamicquests.quests.gui.ConfirmationGui;
 import com.cachedcloud.dynamicquests.utils.GuiUtil;
 import com.cachedcloud.dynamicquests.utils.StringPrompt;
@@ -43,6 +45,11 @@ public class DataMainMenu extends Gui {
 
   @Override
   public void redraw() {
+    // Get the attribute module that corresponds to this attribute
+    BaseAttributeModule<?> attributeModule = attribute instanceof Objective ?
+        questModule.getObjectiveModule() :
+        questModule.getRewardModule();
+
     // Show all attributes
     MenuPopulator attributesPopulator = ITEMS_SCHEME.newPopulator(this);
     JSONObject jsonObject = this.attribute.getJson();
@@ -62,8 +69,9 @@ public class DataMainMenu extends Gui {
             // Create and open a confirmation menu to delete the attribute
             ConfirmationGui confirmationGui = new ConfirmationGui(getPlayer(), "&8Delete Objective?",
                 accept -> {
-                  // todo delete objective + sql + exception handling maybe
+                  // Delete reward/objective
                   attribute.updateAttribute(key, null);
+                  attributeModule.updateAttribute(attribute);
 
                   // Close gui
                   accept.close();
@@ -87,8 +95,9 @@ public class DataMainMenu extends Gui {
             StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter a new value for this attribute (\"exit\" to cancel):", input -> {
               // Check if input is valid
               if (input != null) {
-                // todo properly update + sql
+                // Update attribute
                 attribute.updateAttribute(key, input);
+                attributeModule.updateAttribute(attribute);
               }
 
               // Re-open menu
@@ -132,10 +141,12 @@ public class DataMainMenu extends Gui {
           StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new attribute key and value in the format \"key=value\". (\"exit\" to cancel):", input -> {
             // Check if input is valid
             if (input != null) {
-              // todo properly update + sql
               String[] data = input.split("=");
               if (data.length == 2) {
                 attribute.updateAttribute(data[0], data[1]);
+
+                // Update db
+                attributeModule.updateAttribute(attribute);
               }
             }
 

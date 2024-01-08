@@ -325,7 +325,7 @@ public class ProgressModule implements TerminableModule {
 
     // Get progress entry from QuestProgress instance
     QuestProgress.ProgressEntry entry = progress.getProgress().get(objective.getUuid());
-    if (entry == null) return -1;
+    if (entry == null) return 100; // this means objective complete
 
     // Calculate percentage
     return (int) (((double) entry.getProgress().intValue() / entry.getRequirement()) * 100);

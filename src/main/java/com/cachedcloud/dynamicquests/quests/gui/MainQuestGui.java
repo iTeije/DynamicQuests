@@ -86,7 +86,7 @@ public class MainQuestGui extends PaginatedGui {
                   (appendProgress ? "&7: &a" + progressModule.getObjectiveProgressPercentage(progress, objective) + "%" : "")
               );
             }
-            if (quest.getObjectives().size() == 0) { // this should never occur, but it's great for debugging todo remove
+            if (quest.getObjectives().size() == 0) {
               builder.lore("&7None");
             }
 
@@ -95,7 +95,7 @@ public class MainQuestGui extends PaginatedGui {
             for (Reward reward : quest.getRewards()) {
               builder.lore("&7- " + reward.getName());
             }
-            if (quest.getRewards().size() == 0) { // again, shouldn't happen, but great to have todo remove
+            if (quest.getRewards().size() == 0) {
               builder.lore("&7None");
             }
 

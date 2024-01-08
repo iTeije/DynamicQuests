@@ -77,28 +77,30 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
   }
 
   public void createAttribute(Quest quest, T attribute) {
+    System.out.println("creating attribute");
     sql.executeAsync(createAttributeStatement, ps -> {
       ps.setString(1, attribute.getUuid().toString());
       ps.setString(2, quest.getUuid().toString());
       ps.setString(3, attribute.getName());
       ps.setString(4, attribute.getType());
-      ps.setObject(5, attribute.getJson());
+      ps.setString(5, attribute.getJson().toString());
     });
   }
 
-  public void updateAttribute(T attribute) {
+  public void updateAttribute(BaseAttribute attribute) {
     sql.executeAsync(updateAttributeStatement, ps -> {
-      ps.setObject(1, attribute.getJson());
+      ps.setString(1, attribute.getJson().toString());
       ps.setString(2, attribute.getName());
       ps.setString(3, attribute.getUuid().toString());
     });
   }
 
-  public void deleteAttribute(T attribute) {
+  public void deleteAttribute(BaseAttribute attribute) {
     sql.executeAsync(deleteAttributeStatement, ps -> {
       ps.setString(1, attribute.getUuid().toString());
     });
   }
 
   public abstract void applyAttributes(Quest quest, List<T> attributes);
+  public abstract void handleNew(T attribute);
 }

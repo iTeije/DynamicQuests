@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class ObjectiveFactory implements Factory<Objective> {
@@ -23,7 +22,7 @@ public class ObjectiveFactory implements Factory<Objective> {
 
       // Create an instance of the corresponding Objective
       return objectiveType.createInstance(uuid, name, json);
-    } catch (NoSuchElementException exception) {
+    } catch (IllegalArgumentException exception) {
       Bukkit.getLogger().warning("ObjectiveType '" + type.toUpperCase() + "' does not exist.");
     } catch (JSONException exception) {
       Bukkit.getLogger().warning("Objective has invalid json data. (type " + type + ", uuid " + uuid.toString() +

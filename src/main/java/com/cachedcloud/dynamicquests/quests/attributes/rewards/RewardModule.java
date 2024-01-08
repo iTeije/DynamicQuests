@@ -25,4 +25,9 @@ public class RewardModule extends BaseAttributeModule<Reward> {
     // Apply rewards
     quest.getRewards().addAll(attributes);
   }
+
+  @Override
+  public void handleNew(Reward attribute) {
+
+  }
 }

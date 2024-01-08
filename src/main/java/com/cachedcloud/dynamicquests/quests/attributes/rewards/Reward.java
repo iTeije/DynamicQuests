@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Getter
@@ -51,7 +50,7 @@ public abstract class Reward implements BaseAttribute {
     // Reload json attributes in reward implementation
     try {
       parseJson(this.json);
-    } catch (JSONException | NullPointerException | NoSuchElementException e) {
+    } catch (JSONException | NullPointerException | IllegalArgumentException e) {
       Bukkit.getLogger().warning("Reward " + uuid.toString() + " has invalid json data because of the " +
           key + ":" + value + " change.");
       if (oldValue != null) {

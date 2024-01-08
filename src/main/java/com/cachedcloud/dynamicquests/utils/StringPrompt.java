@@ -37,7 +37,7 @@ public class StringPrompt extends ValidatingPrompt {
 
   public static void startPrompt(final Plugin plugin, Player player, String prompt, Consumer<String> responseHandler) {
     new ConversationFactory(plugin)
-        .withTimeout(30)
+        .withTimeout(180)
         .withLocalEcho(false)
         .withModality(false)
         .withFirstPrompt(new StringPrompt(prompt, responseHandler))

@@ -28,8 +28,12 @@ public class ObjectiveModule extends BaseAttributeModule<Objective> {
     quest.getObjectives().addAll(attributes);
 
     // Register listeners for each objective
-    attributes.forEach(objective -> {
-      objective.registerListeners(consumer);
-    });
+    attributes.forEach(this::handleNew);
+  }
+
+  @Override
+  public void handleNew(Objective attribute) {
+    System.out.println("registering listeners");
+    attribute.registerListeners(consumer);
   }
 }

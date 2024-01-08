@@ -3,6 +3,7 @@ package com.cachedcloud.dynamicquests.quests.gui.admin;
 import com.cachedcloud.dynamicquests.DynamicQuests;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.QuestModule;
+import com.cachedcloud.dynamicquests.quests.gui.ConfirmationGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.attributes.QuestObjectivesAdminGui;
 import com.cachedcloud.dynamicquests.quests.gui.admin.attributes.QuestRewardsAdminGui;
 import com.cachedcloud.dynamicquests.utils.GuiUtil;
@@ -70,9 +71,9 @@ public class QuestAdminGui extends Gui {
           StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new quest description. Use \"\\n\" to add a line break. (\"exit\" to cancel):", input -> {
             // Check if input is valid
             if (input != null) {
-              // todo properly update + sql
               // Set description and split it on a literal "\n"
               quest.setDescription(Arrays.asList(input.split("\\\\n")));
+              questModule.updateQuest(quest);
             }
 
             // Re-open menu
@@ -90,8 +91,9 @@ public class QuestAdminGui extends Gui {
           StringPrompt.startPrompt(DynamicQuests.getInstance(), getPlayer(), "&7Enter new quest name (\"exit\" to cancel):", input -> {
             // Check if input is valid
             if (input != null) {
-              // todo properly update + sql
+              // Set name and update sql
               quest.setName(input);
+              questModule.updateQuest(quest);
             }
 
             // Re-open menu
@@ -164,7 +166,23 @@ public class QuestAdminGui extends Gui {
             "&7for a confirmation."
         )
         .build(() -> {
-          // todo open delete confirmation menu
+          // Create and open a confirmation menu
+          ConfirmationGui confirmationGui = new ConfirmationGui(getPlayer(), "&8Delete Quest?",
+              accept -> {
+                // Delete quest
+                questModule.deleteQuest(quest.getUuid());
+
+                // Close gui
+                accept.setFallbackGui(super.getFallbackGui());
+                accept.close();
+              }, Gui::close);
+          
+          confirmationGui.setFallbackGui(p -> this);
+          Function<Player, Gui> currentFallback = getFallbackGui();
+          setFallbackGui(null);
+          close();
+          confirmationGui.open();
+          setFallbackGui(currentFallback);
         })
     );
   }
