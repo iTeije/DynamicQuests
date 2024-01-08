@@ -32,7 +32,7 @@ public class CreateAttributeGui extends Gui {
   private final boolean isObjective;
 
   public CreateAttributeGui(Player player, Quest quest, QuestModule questModule, boolean isObjective) {
-    super(player, 5, "&8Create Objective");
+    super(player, 5, "&8Create " + (isObjective ? "Objective" : "Reward"));
     this.quest = quest;
     this.questModule = questModule;
     this.isObjective = isObjective;
