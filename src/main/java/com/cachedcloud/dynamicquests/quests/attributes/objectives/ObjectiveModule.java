@@ -33,7 +33,6 @@ public class ObjectiveModule extends BaseAttributeModule<Objective> {
 
   @Override
   public void handleNew(Objective attribute) {
-    System.out.println("registering listeners");
     attribute.registerListeners(consumer);
   }
 }

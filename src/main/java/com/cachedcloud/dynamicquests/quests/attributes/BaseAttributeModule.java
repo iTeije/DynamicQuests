@@ -77,7 +77,6 @@ public abstract class BaseAttributeModule<T extends BaseAttribute> implements Te
   }
 
   public void createAttribute(Quest quest, T attribute) {
-    System.out.println("creating attribute");
     sql.executeAsync(createAttributeStatement, ps -> {
       ps.setString(1, attribute.getUuid().toString());
       ps.setString(2, quest.getUuid().toString());
