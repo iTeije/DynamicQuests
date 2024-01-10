@@ -1,5 +1,6 @@
 package com.cachedcloud.dynamicquests.quests.tracking;
 
+import com.cachedcloud.dynamicquests.events.PlayerQuestChangeStatusEvent;
 import com.cachedcloud.dynamicquests.messaging.MessageModule;
 import com.cachedcloud.dynamicquests.messaging.StorageKey;
 import com.cachedcloud.dynamicquests.quests.Quest;
@@ -145,6 +146,7 @@ public class ProgressModule implements TerminableModule {
 
     // Create questprogress instance
     QuestProgress progress = new QuestProgress(player.getUniqueId(), quest);
+    Events.call(new PlayerQuestChangeStatusEvent(player.getUniqueId(), quest, progress, PlayerQuestChangeStatusEvent.Status.START));
 
     // Store questprogress
     this.progressMap.put(player.getUniqueId(), progress);
@@ -166,7 +168,9 @@ public class ProgressModule implements TerminableModule {
    */
   public void deleteProgress(UUID playerUuid, Quest quest) {
     // Remove progress from cache
-    this.progressMap.remove(playerUuid);
+    QuestProgress progress = this.progressMap.remove(playerUuid);
+    // Send cancel thingy
+    Events.call(new PlayerQuestChangeStatusEvent(playerUuid, quest, progress, PlayerQuestChangeStatusEvent.Status.CANCEL));
 
     this.cancelTracking(playerUuid, quest);
 
@@ -254,6 +258,12 @@ public class ProgressModule implements TerminableModule {
       // Store progress
       QuestProgress progress = progressOptional.get();
       this.progressMap.put(playerUuid, progress);
+
+      // Call event
+      Schedulers.sync().run(() -> {
+        Events.call(new PlayerQuestChangeStatusEvent(playerUuid, progress.getQuest(), progress, PlayerQuestChangeStatusEvent.Status.CONTINUE));
+      });
+
       return progress;
     });
   }
@@ -287,6 +297,7 @@ public class ProgressModule implements TerminableModule {
 
     // Log
     Bukkit.getLogger().info(playerUuid.toString() + " completed quest " + quest.getName());
+    Events.call(new PlayerQuestChangeStatusEvent(playerUuid, quest, progress, PlayerQuestChangeStatusEvent.Status.COMPLETE));
 
     // Delete progress
     this.deleteProgress(playerUuid, quest);

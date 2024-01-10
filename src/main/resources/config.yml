@@ -1,5 +1,11 @@
 # SQL credentials are in the helper-sql config, in case you're wondering.
 
+# Sign location
+sign:
+  x: 100
+  y: 100
+  z: 100
+
 # Messages
 messages:
   pending-load-error: "&cQuests are still loading. Please try again later."

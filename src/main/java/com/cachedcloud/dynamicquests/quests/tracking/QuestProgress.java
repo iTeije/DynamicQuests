@@ -1,9 +1,11 @@
 package com.cachedcloud.dynamicquests.quests.tracking;
 
+import com.cachedcloud.dynamicquests.events.PlayerQuestProgressEvent;
 import com.cachedcloud.dynamicquests.quests.Quest;
 import com.cachedcloud.dynamicquests.quests.attributes.objectives.Objective;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import me.lucko.helper.Events;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.json.JSONObject;
 
@@ -63,6 +65,9 @@ public class QuestProgress {
   public void incrementProgress(Objective objective, int amount) {
     // After adding the new progress, check if the requirement is met
     boolean complete = this.progress.get(objective.getUuid()).add(amount);
+
+    // Call event
+    if (amount > 0) Events.call(new PlayerQuestProgressEvent(this.playerUuid, this.quest, objective, this, complete));
 
     // If the requirement is met, stop tracking that objective
     if (!complete) return;
